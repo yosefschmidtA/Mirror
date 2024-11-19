@@ -28,9 +28,54 @@ def process_file(file_path):
                 intensity = float(parts[3])  # Coleta intensidade na quarta posição
                 data.append([phi, theta_value, intensity])
 
+
     # Cria um DataFrame a partir dos dados coletados
     df = pd.DataFrame(data, columns=['Phi', 'Theta', 'Intensity'])
+
     return df
+
+
+def normalize_and_complete_phi(df):
+    """
+    Normaliza o intervalo de Phi para começar em 0 e completa os quadrantes simetricamente.
+    """
+    phi_min = df['Phi'].min()
+    phi_max = df['Phi'].max()
+    phi_range = phi_max - phi_min
+
+    # Reescalar Phi para começar em 0
+    df['Phi'] = df['Phi'] - phi_min
+    if phi_range < 360 and df['Phi'].max() < 360:
+        # Encontrar os pontos com Phi = 0 e duplicar como Phi = 360
+        df_360 = df[df['Phi'] == 0].copy()
+        df_360['Phi'] = 360
+        df = pd.concat([df, df_360], ignore_index=True)
+
+    # Completar os quadrantes com base no intervalo de Phi
+    if phi_range <= 90:
+        # Repetir para os 4 quadrantes
+        df_90_180 = df.copy()
+        df_90_180['Phi'] = 180 - df_90_180['Phi']
+
+        df_180_270 = df.copy()
+        df_180_270['Phi'] = 180 + df_180_270['Phi']
+
+        df_270_360 = df.copy()
+        df_270_360['Phi'] = 360 - df_270_360['Phi']
+
+        df = pd.concat([df, df_90_180, df_180_270, df_270_360], ignore_index=True)
+
+    elif phi_range <= 180:
+        # Repetir para os 2 quadrantes restantes
+        df_180_360 = df.copy()
+        df_180_360['Phi'] = 360 - df_180_360['Phi']
+
+        df = pd.concat([df, df_180_360], ignore_index=True)
+
+    # Ordenar para consistência
+    df = df.sort_values(by=['Phi', 'Theta']).reset_index(drop=True)
+    return df
+
 
 
 # Função para interpolar os dados
@@ -62,10 +107,10 @@ def plot_polar_interpolated(df, resolution=100):
     fig, ax = plt.subplots(subplot_kw={'projection': 'polar'})
 
     # Plotando a intensidade interpolada
-    c = ax.pcolormesh(phi_grid, theta_grid, intensity_grid, shading='gouraud', cmap='viridis')
+    c = ax.pcolormesh(phi_grid, theta_grid, intensity_grid, shading='gouraud', cmap='plasma')
 
-    ax.set_xlabel('Phi (radianos)')
-    ax.set_ylabel('Theta (radianos)')
+    ax.set_xlabel('Phi ')
+    ax.set_ylabel('... ')
 
     # Adicionando a barra de cores
     fig.colorbar(c, ax=ax, label='Intensidade')
@@ -76,6 +121,8 @@ def plot_polar_interpolated(df, resolution=100):
 # Uso da função
 file_path = 'exp_Fe2_GaO.out'  # Substitua pelo caminho do seu arquivo
 df = process_file(file_path)
+
+df = normalize_and_complete_phi(df)
 
 # Gerar o gráfico polar interpolado
 plot_polar_interpolated(df)
