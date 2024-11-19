@@ -40,11 +40,16 @@ def normalize_and_complete_phi(df):
     phi_min = df['Phi'].min()
     phi_max = df['Phi'].max()
     phi_range = phi_max - phi_min
+    # Reescalar Phi para começar em 0 se necessário
+    df['Phi'] = df['Phi'] - phi_min
 
-    # Verifique se o intervalo de Phi precisa ser ajustado
     if phi_range < 360 and df['Phi'].max() < 360:
-        # Reescalar Phi para começar em 0 se necessário
-        df['Phi'] = df['Phi'] - phi_min
+        # Encontrar os pontos com Phi = 0 e duplicar como Phi = 360
+        df_360 = df[df['Phi'] == 180].copy()
+        df_360['Phi'] = 360
+        df = pd.concat([df, df_360], ignore_index=True)
+
+
 
         # Caso o intervalo de Phi seja menor que 360, completaremos os quadrantes simetricamente
         if phi_range <= 90:
@@ -70,7 +75,7 @@ def normalize_and_complete_phi(df):
 
 
 # Função para interpolar os dados
-def interpolate_data(df, resolution=100):
+def interpolate_data(df, resolution=1000):
     # Definir uma grade regular para a interpolação
     phi = np.radians(df['Phi'])
     theta = np.radians(df['Theta'])
@@ -90,7 +95,7 @@ def interpolate_data(df, resolution=100):
 
 
 # Função para gerar o gráfico polar
-def plot_polar_interpolated(df, resolution=100):
+def plot_polar_interpolated(df, resolution=1000):
     # Interpolar os dados
     phi_grid, theta_grid, intensity_grid = interpolate_data(df, resolution)
 
