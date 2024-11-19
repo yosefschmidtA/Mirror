@@ -62,7 +62,7 @@ def plot_polar_interpolated(df, resolution=100):
     fig, ax = plt.subplots(subplot_kw={'projection': 'polar'})
 
     # Plotando a intensidade interpolada
-    c = ax.pcolormesh(phi_grid, theta_grid, intensity_grid, shading='auto', cmap='viridis')
+    c = ax.pcolormesh(phi_grid, theta_grid, intensity_grid, shading='gouraud', cmap='viridis')
 
     ax.set_xlabel('Phi (radianos)')
     ax.set_ylabel('Theta (radianos)')
