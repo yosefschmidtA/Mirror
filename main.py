@@ -1,6 +1,7 @@
 import pandas as pd
 import matplotlib.pyplot as plt
 import numpy as np
+from scipy.interpolate import griddata
 
 
 # Função para processar o arquivo
@@ -32,23 +33,42 @@ def process_file(file_path):
     return df
 
 
-# Função para gerar o gráfico polar
-def plot_polar(df):
-    # Convertendo Phi para radianos
+# Função para interpolar os dados
+def interpolate_data(df, resolution=100):
+    # Definir uma grade regular para a interpolação
     phi = np.radians(df['Phi'])
-    theta = np.radians(df['Theta'])  # Theta em radianos
+    theta = np.radians(df['Theta'])
     intensity = df['Intensity']
 
-    # Criando um gráfico polar
+    # Criando uma grade de pontos onde queremos interpolar
+    phi_grid = np.linspace(np.min(phi), np.max(phi), resolution)
+    theta_grid = np.linspace(np.min(theta), np.max(theta), resolution)
+
+    # Criando uma grade de malha para interpolação
+    phi_grid, theta_grid = np.meshgrid(phi_grid, theta_grid)
+
+    # Realizar a interpolação
+    intensity_grid = griddata((phi, theta), intensity, (phi_grid, theta_grid), method='cubic')
+
+    return phi_grid, theta_grid, intensity_grid
+
+
+# Função para gerar o gráfico polar
+def plot_polar_interpolated(df, resolution=100):
+    # Interpolar os dados
+    phi_grid, theta_grid, intensity_grid = interpolate_data(df, resolution)
+
+    # Criando o gráfico polar
     fig, ax = plt.subplots(subplot_kw={'projection': 'polar'})
 
-    # Plotando os dados no gráfico polar
-    sc = ax.scatter(phi, theta, c=intensity, cmap='viridis', s=10)  # Usando viridis para a coloração de intensidade
+    # Plotando a intensidade interpolada
+    c = ax.pcolormesh(phi_grid, theta_grid, intensity_grid, shading='auto', cmap='viridis')
+
     ax.set_xlabel('Phi (radianos)')
     ax.set_ylabel('Theta (radianos)')
 
     # Adicionando a barra de cores
-    fig.colorbar(sc, ax=ax, label='Intensidade')
+    fig.colorbar(c, ax=ax, label='Intensidade')
 
     plt.show()
 
@@ -57,5 +77,5 @@ def plot_polar(df):
 file_path = 'exp_Fe2_GaO.out'  # Substitua pelo caminho do seu arquivo
 df = process_file(file_path)
 
-# Gerar o gráfico polar
-plot_polar(df)
+# Gerar o gráfico polar interpolado
+plot_polar_interpolated(df)
