@@ -1,4 +1,7 @@
 import pandas as pd
+import matplotlib.pyplot as plt
+import numpy as np
+
 
 # Função para processar o arquivo
 def process_file(file_path):
@@ -23,14 +26,36 @@ def process_file(file_path):
                 phi = float(parts[0])  # Coleta φ na primeira posição
                 intensity = float(parts[3])  # Coleta intensidade na quarta posição
                 data.append([phi, theta_value, intensity])
-                print(f"Adicionando dados: φ = {phi}, θ = {theta_value}, Intensidade = {intensity}")
 
     # Cria um DataFrame a partir dos dados coletados
     df = pd.DataFrame(data, columns=['Phi', 'Theta', 'Intensity'])
     return df
 
+
+# Função para gerar o gráfico polar
+def plot_polar(df):
+    # Convertendo Phi para radianos
+    phi = np.radians(df['Phi'])
+    theta = np.radians(df['Theta'])  # Theta em radianos
+    intensity = df['Intensity']
+
+    # Criando um gráfico polar
+    fig, ax = plt.subplots(subplot_kw={'projection': 'polar'})
+
+    # Plotando os dados no gráfico polar
+    sc = ax.scatter(phi, theta, c=intensity, cmap='viridis', s=10)  # Usando viridis para a coloração de intensidade
+    ax.set_xlabel('Phi (radianos)')
+    ax.set_ylabel('Theta (radianos)')
+
+    # Adicionando a barra de cores
+    fig.colorbar(sc, ax=ax, label='Intensidade')
+
+    plt.show()
+
+
 # Uso da função
 file_path = 'exp_Fe2_GaO.out'  # Substitua pelo caminho do seu arquivo
 df = process_file(file_path)
 
-print(df)
+# Gerar o gráfico polar
+plot_polar(df)
