@@ -2,15 +2,24 @@ import pandas as pd
 
 # Função para aplicar a simetria vertical nos dados
 def apply_vertical_symmetry(df):
-    # Filtrar dados de Phi entre 0 e 180
-    df_original = df[df['Phi'] <= 180].copy()
+    # Filtrar dados de Phi entre 0 e 90
+    df_original = df[df['Phi'] <= 90].copy()
 
-    # Criar os dados simétricos
-    df_symmetry = df_original.copy()
-    df_symmetry['Phi'] = 360 - df_original['Phi']  # Espelhar Phi verticalmente
+    # Criar os dados simétricos para 90 a 180 (reflexão do primeiro quadrante)
+    df_symmetry_1 = df_original.copy()
+    df_symmetry_1['Phi'] = 180 - df_original['Phi']  # Espelhar Phi verticalmente para o segundo quadrante
 
-    # Combinar os dados originais e simétricos
-    df_combined = pd.concat([df, df_symmetry], ignore_index=True)
+    # Criar os dados simétricos para 180 a 270 (reflexão do segundo quadrante)
+    df_symmetry_2 = df_symmetry_1.copy()
+    df_symmetry_2['Phi'] = 360 - df_symmetry_1['Phi']  # Espelhar Phi verticalmente para o terceiro quadrante
+
+    # Criar os dados simétricos para 270 a 360 (reflexão do primeiro quadrante)
+    df_symmetry_3 = df_symmetry_1.copy()
+    df_symmetry_3['Phi'] = 180 + df_symmetry_1['Phi']  # Espelhar Phi para o quarto quadrante
+
+
+    # Combinar todos os dados (originais e simétricos)
+    df_combined = pd.concat([df_original, df_symmetry_1, df_symmetry_2, df_symmetry_3], ignore_index=True)
 
     # Remover duplicatas
     df_combined = df_combined.drop_duplicates(subset=['Phi', 'Theta']).reset_index(drop=True)
