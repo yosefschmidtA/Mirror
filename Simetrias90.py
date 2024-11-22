@@ -1,5 +1,35 @@
 import pandas as pd
 
+# Função para processar o arquivo
+def process_file(file_path):
+    with open(file_path, 'r') as file:
+        lines = file.readlines()
+
+    # Inicializar uma lista para armazenar os dados
+    data = []
+    theta_value = None  # Para armazenar o valor de θ
+
+    # Iterar sobre as linhas, começando após o cabeçalho
+    for i in range(17, len(lines)):
+        line = lines[i].strip()  # Remove espaços em branco das extremidades
+
+        if line:  # Verifica se a linha não está vazia
+            parts = line.split()  # Divide a linha em partes
+
+            if len(parts) == 6:  # Linha que contém θ
+                theta_value = float(parts[3])  # Coleta θ na quarta posição
+
+            elif len(parts) == 4 and theta_value is not None:  # Linha que contém φ e intensidade
+                phi = float(parts[0])  # Coleta φ na primeira posição
+                col1 = float(parts[1])  # Coleta o valor da segunda coluna
+                col2 = float(parts[2])  # Coleta o valor da terceira coluna
+                intensity = float(parts[3])  # Coleta intensidade na quarta posição
+                data.append([phi, col1, col2, theta_value, intensity])
+
+    # Cria um DataFrame a partir dos dados coletados
+    df = pd.DataFrame(data, columns=['Phi', 'Col1', 'Col2', 'Theta', 'Intensity'])
+    return df
+
 # Função para aplicar a simetria vertical nos dados
 def apply_vertical_symmetry(df):
     # Filtrar dados de Phi entre 0 e 90
@@ -16,7 +46,6 @@ def apply_vertical_symmetry(df):
     # Criar os dados simétricos para 270 a 360 (reflexão do primeiro quadrante)
     df_symmetry_3 = df_symmetry_1.copy()
     df_symmetry_3['Phi'] = 180 + df_symmetry_1['Phi']  # Espelhar Phi para o quarto quadrante
-
 
     # Combinar todos os dados (originais e simétricos)
     df_combined = pd.concat([df_original, df_symmetry_1, df_symmetry_2, df_symmetry_3], ignore_index=True)
@@ -41,37 +70,9 @@ def save_to_txt_with_blocks(df, file_name):
             # Selecionar apenas os dados para o θ atual
             subset = df[df['Theta'] == theta]
             for _, row in subset.iterrows():
-                file.write(f"{row['Phi']:.2f}\t{row['Intensity']:.6f}\n")
+                file.write(f"{row['Phi']:.2f}\t{row['Col1']:.2f}\t{row['Col2']:.2f}\t{row['Intensity']:.6f}\n")
             # Linha em branco para separar os blocos
             file.write("\n")
-
-# Função para processar o arquivo
-def process_file(file_path):
-    with open(file_path, 'r') as file:
-        lines = file.readlines()
-
-    # Inicializar uma lista para armazenar os dados
-    data = []
-    theta_value = None  # Para armazenar o valor de θ
-
-    # Iterar sobre as linhas, começando após o cabeçalho
-    for i in range(17, len(lines)):
-        line = lines[i].strip()  # Remove espaços em branco das extremidades
-
-        if line:  # Verifica se a linha não está vazia
-            parts = line.split()  # Divide a linha em partes
-
-            if len(parts) == 6:  # Linha que contém θ
-                theta_value = float(parts[3])  # Coleta θ na quarta posição
-
-            elif len(parts) == 4 and theta_value is not None:  # Linha que contém φ e intensidade
-                phi = float(parts[0])  # Coleta φ na primeira posição
-                intensity = float(parts[3])  # Coleta intensidade na quarta posição
-                data.append([phi, theta_value, intensity])
-
-    # Cria um DataFrame a partir dos dados coletados
-    df = pd.DataFrame(data, columns=['Phi', 'Theta', 'Intensity'])
-    return df
 
 # Uso das funções
 file_path = 'exp_Fe2_GaO.out'  # Substitua pelo caminho do seu arquivo

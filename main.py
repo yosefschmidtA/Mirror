@@ -4,7 +4,6 @@ import numpy as np
 from scipy.interpolate import griddata
 
 
-# Função para processar o arquivo
 def process_file(file_path):
     with open(file_path, 'r') as file:
         lines = file.readlines()
@@ -25,11 +24,13 @@ def process_file(file_path):
 
             elif len(parts) == 4 and theta_value is not None:  # Linha que contém φ e intensidade
                 phi = float(parts[0])  # Coleta φ na primeira posição
+                col1 = float(parts[1])  # Coleta o valor da segunda coluna
+                col2 = float(parts[2])  # Coleta o valor da terceira coluna
                 intensity = float(parts[3])  # Coleta intensidade na quarta posição
-                data.append([phi, theta_value, intensity])
+                data.append([phi, col1, col2, theta_value, intensity])
 
     # Cria um DataFrame a partir dos dados coletados
-    df = pd.DataFrame(data, columns=['Phi', 'Theta', 'Intensity'])
+    df = pd.DataFrame(data, columns=['Phi', 'Col1', 'Col2', 'Theta', 'Intensity'])
     return df
 
 

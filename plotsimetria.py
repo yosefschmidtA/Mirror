@@ -3,7 +3,6 @@ import matplotlib.pyplot as plt
 import numpy as np
 from scipy.interpolate import griddata
 
-
 # Função para processar o novo arquivo com blocos
 def process_block_file(file_path):
     """
@@ -20,14 +19,15 @@ def process_block_file(file_path):
             # Extrai o valor de Theta
             theta_value = float(line.split()[1])
         elif line and theta_value is not None:  # Processa as linhas de dados no bloco
-            # Cada linha deve ter Phi e Intensidade
-            phi, intensity = map(float, line.split())
+            # Cada linha deve ter pelo menos 4 colunas (Phi na coluna 0, Intensidade na coluna 3)
+            parts = line.split()
+            phi = float(parts[0])  # Phi na coluna 0
+            intensity = float(parts[3])  # Intensidade na coluna 3
             data.append([phi, theta_value, intensity])
 
     # Criar um DataFrame a partir dos dados coletados
     df = pd.DataFrame(data, columns=['Phi', 'Theta', 'Intensity'])
     return df
-
 
 # Função para interpolar os dados
 def interpolate_data(df, resolution=1000):
@@ -50,7 +50,6 @@ def interpolate_data(df, resolution=1000):
     intensity_grid = griddata((phi, theta), intensity, (phi_grid, theta_grid), method='cubic')
 
     return phi_grid, theta_grid, intensity_grid
-
 
 # Função para gerar o gráfico polar
 def plot_polar_interpolated(df, resolution=1000):
@@ -83,7 +82,6 @@ def plot_polar_interpolated(df, resolution=1000):
     fig.colorbar(c, ax=ax, label='Intensidade')
 
     plt.show()
-
 
 # Uso da função
 file_path = 'exp_Fe2_GaO_with_symmetry_blocks.txt'  # Substitua pelo caminho do novo arquivo

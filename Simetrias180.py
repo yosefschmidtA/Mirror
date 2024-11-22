@@ -2,21 +2,25 @@ import pandas as pd
 
 # Função para aplicar a simetria vertical nos dados de 0 a 180
 def apply_symmetry_0_180(df):
+    """
+    Aplica a simetria vertical aos dados de Phi entre 0 e 180,
+    incluindo as colunas adicionais Col1 e Col2.
+    """
     # Filtrar dados de Phi entre 0 e 180
     df_original = df[df['Phi'] <= 180].copy()
 
-    # Criar os dados simétricos para 180 a 360 (reflexão do primeiro quadrante)
-    df_symmetry_1 = df_original.copy()
-    df_symmetry_1['Phi'] = 360 - df_original['Phi']  # Espelhar Phi verticalmente para 180 a 360
+    # Criar os dados simétricos para 180 a 360 (reflexão vertical)
+    df_symmetry = df_original.copy()
+    df_symmetry['Phi'] = 360 - df_original['Phi']  # Espelhar Phi verticalmente para 180 a 360
 
-    # Combinar todos os dados (originais e simétricos)
-    df_combined = pd.concat([df_original, df_symmetry_1], ignore_index=True)
+    # Manter os valores de Intensity, Col1 e Col2 iguais para a simetria
+    df_combined = pd.concat([df_original, df_symmetry], ignore_index=True)
 
     # Remover duplicatas
     df_combined = df_combined.drop_duplicates(subset=['Phi', 'Theta']).reset_index(drop=True)
 
     # Ordenar para manter consistência
-    df_combined = df_combined.sort_values(by=['Phi', 'Theta']).reset_index(drop=True)
+    df_combined = df_combined.sort_values(by=['Theta', 'Phi']).reset_index(drop=True)
 
     return df_combined
 
@@ -32,12 +36,15 @@ def save_to_txt_with_blocks(df, file_name):
             # Selecionar apenas os dados para o θ atual
             subset = df[df['Theta'] == theta]
             for _, row in subset.iterrows():
-                file.write(f"{row['Phi']:.2f}\t{row['Intensity']:.6f}\n")
+                file.write(f"{row['Phi']:.2f}\t{row['Col1']:.2f}\t{row['Col2']:.2f}\t{row['Intensity']:.6f}\n")
             # Linha em branco para separar os blocos
             file.write("\n")
 
 # Função para processar o arquivo
 def process_file(file_path):
+    """
+    Lê os dados do arquivo, coletando Phi, Col1, Col2 e Intensidade das colunas indicadas.
+    """
     with open(file_path, 'r') as file:
         lines = file.readlines()
 
@@ -45,7 +52,7 @@ def process_file(file_path):
     data = []
     theta_value = None  # Para armazenar o valor de θ
 
-    # Iterar sobre as linhas, começando após o cabeçalho
+    # Iterar sobre as linhas, começando após o cabeçalho (17 linhas)
     for i in range(17, len(lines)):
         line = lines[i].strip()  # Remove espaços em branco das extremidades
 
@@ -55,13 +62,15 @@ def process_file(file_path):
             if len(parts) == 6:  # Linha que contém θ
                 theta_value = float(parts[3])  # Coleta θ na quarta posição
 
-            elif len(parts) == 4 and theta_value is not None:  # Linha que contém φ e intensidade
+            elif len(parts) >= 4 and theta_value is not None:  # Linha que contém φ, colunas adicionais e intensidade
                 phi = float(parts[0])  # Coleta φ na primeira posição
+                col1 = float(parts[1])  # Coleta Col1 na segunda posição
+                col2 = float(parts[2])  # Coleta Col2 na terceira posição
                 intensity = float(parts[3])  # Coleta intensidade na quarta posição
-                data.append([phi, theta_value, intensity])
+                data.append([phi, col1, col2, theta_value, intensity])
 
     # Cria um DataFrame a partir dos dados coletados
-    df = pd.DataFrame(data, columns=['Phi', 'Theta', 'Intensity'])
+    df = pd.DataFrame(data, columns=['Phi', 'Col1', 'Col2', 'Theta', 'Intensity'])
     return df
 
 # Uso das funções
