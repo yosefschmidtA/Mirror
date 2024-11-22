@@ -6,19 +6,9 @@
   <component name="ChangeListManager">
     <list default="true" id="ea7fdd2e-a8d5-403e-bfac-032ea3b0a74e" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Reflexaosegunda.py" beforeDir="false" afterPath="$PROJECT_DIR$/Reflexaosegunda.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Simetriam.py" beforeDir="false" afterPath="$PROJECT_DIR$/Simetriam.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Simetrias180.py" beforeDir="false" afterPath="$PROJECT_DIR$/Simetrias180.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Simetrias90.py" beforeDir="false" afterPath="$PROJECT_DIR$/Simetrias90.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/exp_Fe2_GaO_with_custom_symmetry_blocks.txt" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/exp_Fe2_GaO_with_second_reflection_blocks.txt" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/exp_Fe2_GaO_with_symmetry.txt" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/exp_Fe2_GaO_with_symmetry_0_180_blocks.txt" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/exp_Fe2_GaO_with_symmetry_100_280_blocks.txt" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/exp_Fe2_GaO_with_symmetry_110_290_blocks.txt" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/exp_Fe2_GaO_with_symmetry_blocks.txt" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/main.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/plotsimetria.py" beforeDir="false" afterPath="$PROJECT_DIR$/plotsimetria.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -88,7 +78,7 @@
       <option name="presentableId" value="Default" />
       <updated>1732019387597</updated>
       <workItem from="1732021438266" duration="13164000" />
-      <workItem from="1732188335919" duration="23573000" />
+      <workItem from="1732188335919" duration="30688000" />
     </task>
     <servers />
   </component>
@@ -97,11 +87,11 @@
   </component>
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
     <SUITE FILE_PATH="coverage/Mirror$Reflexaosegunda.coverage" NAME="Reflexaosegunda Coverage Results" MODIFIED="1732199153912" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
-    <SUITE FILE_PATH="coverage/Mirror$Simetrias90.coverage" NAME="Simetrias90 Coverage Results" MODIFIED="1732299969249" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/Mirror$Simetrias180.coverage" NAME="Simetrias180 Coverage Results" MODIFIED="1732300199666" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
-    <SUITE FILE_PATH="coverage/Mirror$Simetriam.coverage" NAME="Simetriam Coverage Results" MODIFIED="1732301461533" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/Mirror$Simetrias90.coverage" NAME="Simetrias90 Coverage Results" MODIFIED="1732308515728" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/Mirror$Simetriam.coverage" NAME="Simetriam Coverage Results" MODIFIED="1732301596781" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/Mirror$Simetrias.coverage" NAME="Simetrias Coverage Results" MODIFIED="1732194700279" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
-    <SUITE FILE_PATH="coverage/Mirror$plotsimetria.coverage" NAME="plotsimetria Coverage Results" MODIFIED="1732300359062" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
-    <SUITE FILE_PATH="coverage/Mirror$main.coverage" NAME="main Coverage Results" MODIFIED="1732296828844" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/Mirror$plotsimetria.coverage" NAME="plotsimetria Coverage Results" MODIFIED="1732301634928" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/Mirror$main.coverage" NAME="main Coverage Results" MODIFIED="1732301957461" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
   </component>
 </project>
