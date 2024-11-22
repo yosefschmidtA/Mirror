@@ -84,7 +84,7 @@ def plot_polar_interpolated(df, resolution=1000):
     plt.show()
 
 # Uso da função
-file_path = 'exp_Fe2_GaO_with_symmetry_blocks.txt'  # Substitua pelo caminho do novo arquivo
+file_path = 'exp_Fe2_GaO_with_symmetry_0_180_blocks.txt'  # Substitua pelo caminho do novo arquivo
 df = process_block_file(file_path)  # Processa o arquivo em blocos
 
 # Gerar o gráfico polar interpolado
