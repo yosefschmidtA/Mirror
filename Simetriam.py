@@ -50,9 +50,8 @@ def apply_symmetry_custom_interval(df, start_angle, end_angle):
     df_symmetry_1 = df_original.copy()
     df_symmetry_1['Phi'] = 360 - df_original['Phi']  # Espelhar Phi para o intervalo 180 a 360
 
-    # Marcar pontos extras (Phi == 360, equivalente a Phi == 0)
-    df_symmetry_1['IsExtra'] = df_symmetry_1['Phi'] == 360
-    df_original['IsExtra'] = False  # Dados originais não são extras
+    # Não adicionar o ponto 360 (equivalente ao 0)
+    df_symmetry_1 = df_symmetry_1[df_symmetry_1['Phi'] != 360]
 
     # Combinar todos os dados (originais e simétricos)
     df_combined = pd.concat([df_original, df_symmetry_1], ignore_index=True)
@@ -82,9 +81,8 @@ def apply_second_symmetry(df):
     df_symmetry_2 = df_second_reflection.copy()
     df_symmetry_2['Phi'] = 360 - df_second_reflection['Phi']  # Espelhar Phi para o intervalo 180 a 360
 
-    # Marcar pontos extras (Phi == 360, equivalente a Phi == 0)
-    df_symmetry_2['IsExtra'] = df_symmetry_2['Phi'] == 360
-    df_second_reflection['IsExtra'] = False  # Dados originais não são extras
+    # Não adicionar o ponto 360 (equivalente ao 0)
+    df_symmetry_2 = df_symmetry_2[df_symmetry_2['Phi'] != 360]
 
     # Combinar os dados
     df_combined_second_reflection = pd.concat([df_second_reflection, df_symmetry_2], ignore_index=True)
@@ -103,11 +101,9 @@ def save_to_txt_with_blocks(df, file_name):
     """
     Salva os dados organizados em blocos, incluindo Phi, Col1, Col2 e Intensity.
     """
-    # Filtrar apenas os pontos que não são extras para cálculos
-    valid_df = df[~df['IsExtra']]  # Considerar apenas os valores válidos
-    num_theta = valid_df['Theta'].nunique()  # Número de ângulos theta únicos
-    num_phi = valid_df['Phi'].nunique()  # Número de ângulos phi únicos
-    num_points = num_theta * num_phi  # Total de pontos
+    num_theta = df['Theta'].nunique()  # Número de ângulos theta únicos
+    num_phi = df['Phi'].nunique()  # Número de ângulos phi únicos
+    num_points = len(df)  # Total de pontos
     theta_initial = df['Theta'].min()  # Valor inicial de Theta
 
     with open(file_name, 'w') as file:
@@ -158,7 +154,7 @@ df_with_symmetry = apply_symmetry_custom_interval(df, start_angle, end_angle)
 df_with_second_reflection = apply_second_symmetry(df_with_symmetry)
 
 # Salvar o DataFrame com simetrias em formato de blocos
-output_file = 'exp_Fe2_GaO_with_symmetry_blocks.txt'
+output_file = 'exp_Fe2P_GaO_1.txt'
 save_to_txt_with_blocks(df_with_second_reflection, output_file)
 
 print(f"Arquivo salvo como: {output_file}")

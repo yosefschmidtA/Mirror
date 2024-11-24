@@ -129,7 +129,7 @@ def plot_polar_interpolated(df, resolution=1000):
 
 
 # Uso da função
-file_path = 'exp_Fe2_GaO_filtered_0_45.txt'  # Substitua pelo caminho do seu arquivo
+file_path = 'exp_Fe2P_fitted.out'  # Substitua pelo caminho do seu arquivo
 df = process_file(file_path)
 
 df = normalize_and_complete_phi(df)

@@ -5,14 +5,12 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="ea7fdd2e-a8d5-403e-bfac-032ea3b0a74e" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/90symmetry.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/recorte180.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/Mirror.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/Mirror.iml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/simetriacerta.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/exp_Fe2_GaO_with_symmetry_0_180_blocks.txt" beforeDir="false" afterPath="$PROJECT_DIR$/exp_Fe2_GaO_with_symmetry_0_180_blocks.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Simetriam.py" beforeDir="false" afterPath="$PROJECT_DIR$/Simetriam.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/exp_Fe2_GaO_with_symmetry_blocks.txt" beforeDir="false" afterPath="$PROJECT_DIR$/exp_Fe2_GaO_with_symmetry_blocks.txt" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/main.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/plotsimetria.py" beforeDir="false" afterPath="$PROJECT_DIR$/plotsimetria.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -38,31 +36,34 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "Python.90symmetry.executor": "Run",
-    "Python.Reflexaosegunda.executor": "Run",
-    "Python.Simetriam.executor": "Run",
-    "Python.Simetrias.executor": "Run",
-    "Python.Simetrias180.executor": "Run",
-    "Python.Simetrias90.executor": "Run",
-    "Python.main.executor": "Run",
-    "Python.plotsimetria.executor": "Run",
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "RunOnceActivity.git.unshallow": "true",
-    "git-widget-placeholder": "master",
-    "last_opened_file_path": "/home/madarame/Mirror",
-    "node.js.detected.package.eslint": "true",
-    "node.js.detected.package.tslint": "true",
-    "node.js.selected.package.eslint": "(autodetect)",
-    "node.js.selected.package.tslint": "(autodetect)",
-    "nodejs_package_manager_path": "npm",
-    "settings.editor.selected.configurable": "com.intellij.pycharm.community.ide.impl.configuration.PythonContentEntriesConfigurable",
-    "vue.rearranger.settings.migration": "true"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;Python.90symmetry.executor&quot;: &quot;Run&quot;,
+    &quot;Python.Reflexaosegunda.executor&quot;: &quot;Run&quot;,
+    &quot;Python.Simetriam.executor&quot;: &quot;Run&quot;,
+    &quot;Python.Simetrias.executor&quot;: &quot;Run&quot;,
+    &quot;Python.Simetrias180.executor&quot;: &quot;Run&quot;,
+    &quot;Python.Simetrias90.executor&quot;: &quot;Run&quot;,
+    &quot;Python.main.executor&quot;: &quot;Run&quot;,
+    &quot;Python.plotsimetria.executor&quot;: &quot;Run&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;master&quot;,
+    &quot;last_opened_file_path&quot;: &quot;/home/madarame/Mirror&quot;,
+    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
+    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
+    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
+    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
+    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;com.intellij.pycharm.community.ide.impl.configuration.PythonContentEntriesConfigurable&quot;,
+    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
   }
-}]]></component>
+}</component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$" />
+    </key>
+    <key name="MoveFile.RECENT_KEYS">
       <recent name="$PROJECT_DIR$" />
     </key>
   </component>
@@ -84,7 +85,8 @@
       <updated>1732019387597</updated>
       <workItem from="1732021438266" duration="13164000" />
       <workItem from="1732188335919" duration="32797000" />
-      <workItem from="1732335865847" duration="4440000" />
+      <workItem from="1732335865847" duration="15418000" />
+      <workItem from="1732399060644" duration="8667000" />
     </task>
     <servers />
   </component>
@@ -95,8 +97,8 @@
     <SUITE FILE_PATH="coverage/Mirror$Simetriam.coverage" NAME="Simetriam Coverage Results" MODIFIED="1732310619304" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/Mirror$Reflexaosegunda.coverage" NAME="Reflexaosegunda Coverage Results" MODIFIED="1732199153912" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/Mirror$main.coverage" NAME="main Coverage Results" MODIFIED="1732337082830" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
-    <SUITE FILE_PATH="coverage/Mirror$plotsimetria.coverage" NAME="plotsimetria Coverage Results" MODIFIED="1732336352402" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/Mirror$Simetrias90.coverage" NAME="Simetrias90 Coverage Results" MODIFIED="1732336475013" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/Mirror$plotsimetria.coverage" NAME="plotsimetria Coverage Results" MODIFIED="1732399580624" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/Mirror$Simetrias.coverage" NAME="Simetrias Coverage Results" MODIFIED="1732194700279" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/Mirror$90symmetry.coverage" NAME="90symmetry Coverage Results" MODIFIED="1732339010577" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/Mirror$Simetrias180.coverage" NAME="Simetrias180 Coverage Results" MODIFIED="1732310402813" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />

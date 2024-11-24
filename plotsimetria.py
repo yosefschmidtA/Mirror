@@ -1,91 +1,81 @@
-import pandas as pd
 import matplotlib.pyplot as plt
 import numpy as np
-from scipy.interpolate import griddata
+import pandas as pd
 
-# Função para processar o novo arquivo com blocos
-def process_block_file(file_path):
-    """
-    Processa um arquivo organizado em blocos de Theta, com colunas Phi e Intensidade.
-    """
-    data = []
+# Função para processar os dados
+def process_file(file_path):
     with open(file_path, 'r') as file:
         lines = file.readlines()
 
-    theta_value = None  # Variável para armazenar o valor atual de Theta
-    for line in lines:
-        line = line.strip()
-        if line.startswith("theta"):  # Identifica o início de um bloco
-            # Extrai o valor de Theta
-            theta_value = float(line.split()[1])
-        elif line and theta_value is not None:  # Processa as linhas de dados no bloco
-            # Cada linha deve ter pelo menos 4 colunas (Phi na coluna 0, Intensidade na coluna 3)
-            parts = line.split()
-            phi = float(parts[0])  # Phi na coluna 0
-            intensity = float(parts[3])  # Intensidade na coluna 3
-            data.append([phi, theta_value, intensity])
+    # Inicializar uma lista para armazenar os dados
+    data = []
+    theta_value = None  # Para armazenar o valor de θ
+
+    # Iterar sobre as linhas, começando após o cabeçalho
+    for i in range(17, len(lines)):
+        line = lines[i].strip()  # Remove espaços em branco das extremidades
+
+        if line:  # Verifica se a linha não está vazia
+            parts = line.split()  # Divide a linha em partes
+
+            if len(parts) == 6:  # Linha que contém θ
+                theta_value = float(parts[3])  # Coleta θ na quarta posição
+
+            elif len(parts) == 4 and theta_value is not None:  # Linha que contém φ e intensidade
+                phi = float(parts[0])  # Coleta φ na primeira posição
+                col1 = float(parts[1])  # Coleta o valor da segunda coluna
+                col2 = float(parts[2])  # Coleta o valor da terceira coluna
+                intensity = float(parts[3])  # Coleta intensidade na quarta posição
+                data.append([phi, col1, col2, theta_value, intensity])
 
     # Criar um DataFrame a partir dos dados coletados
-    df = pd.DataFrame(data, columns=['Phi', 'Theta', 'Intensity'])
-    return df
+    df = pd.DataFrame(data, columns=['Phi', 'Col1', 'Col2', 'Theta', 'Intensity'])
 
-# Função para interpolar os dados
-def interpolate_data(df, resolution=1000):
-    """
-    Interpola os dados para uma grade regular.
-    """
-    # Converter graus para radianos para o gráfico polar
-    phi = np.radians(df['Phi'])
-    theta = np.radians(df['Theta'])
-    intensity = df['Intensity']
+    # Replicar os dados para cobrir os 360 graus
+    df_0_90 =df.copy()
+    df_0_90['Phi'] = 360 - df_0_90['Phi']
 
-    # Criando uma grade de pontos onde queremos interpolar
-    phi_grid = np.linspace(np.min(phi), np.max(phi), resolution)
-    theta_grid = np.linspace(np.min(theta), np.max(theta), resolution)
+    df_90_180 = df.copy()
+    df_90_180['Phi'] = 90 - df_90_180['Phi']  # Reflete os valores de Phi para o segundo quadrante
 
-    # Criando uma grade de malha para interpolação
-    phi_grid, theta_grid = np.meshgrid(phi_grid, theta_grid)
+    df_180_270 = df.copy()
+    df_180_270['Phi'] = 180 - df_180_270['Phi']  # Reflete os valores de Phi para o terceiro quadrante
 
-    # Realizar a interpolação
-    intensity_grid = griddata((phi, theta), intensity, (phi_grid, theta_grid), method='cubic')
+    df_270_360 = df.copy()
+    df_270_360['Phi'] = 270 - df_270_360['Phi']  # Reflete os valores de Phi para o quarto quadrante
 
-    return phi_grid, theta_grid, intensity_grid
+    # Combinar os dados para cobrir os 4 quadrantes
+    df_full = pd.concat([df,df_0_90, df_90_180, df_180_270, df_270_360]).reset_index(drop=True)
+
+    return df_full
 
 # Função para gerar o gráfico polar
-def plot_polar_interpolated(df, resolution=1000):
-    """
-    Gera um gráfico polar interpolado com os dados fornecidos.
-    """
-    # Interpolar os dados
-    phi_grid, theta_grid, intensity_grid = interpolate_data(df, resolution)
+def plot_polar(df):
+    # Converter Phi de graus para radianos
+    phi_rad = np.radians(df['Phi'])
 
-    # Criando o gráfico polar
+    # Configurar o gráfico polar
     fig, ax = plt.subplots(subplot_kw={'projection': 'polar'})
 
-    # Plotando a intensidade interpolada
-    c = ax.pcolormesh(phi_grid, theta_grid, intensity_grid, shading='gouraud', cmap='hot')
+    # Plotar os dados de intensidade
+    sc = ax.scatter(phi_rad, df['Intensity'], c=df['Intensity'], cmap='inferno', s=20, marker='o')
 
-    # Ajuste para mostrar os valores reais de theta (em graus)
-    ax.set_theta_offset(0)  # Ajusta o ponto de origem para o topo
-    ax.set_theta_direction(1)  # Ajusta a direção dos ângulos para ser anti-horária
+    # Adicionar título e configurações
+    ax.set_title('Gráfico Polar de Intensidade', va='bottom')
+    ax.set_xlabel('Ângulo Phi (graus)')
+    ax.set_ylabel('Intensidade')
 
-    # Limitar o eixo radial até o maior valor de theta
-    max_theta = df['Theta'].max()  # Maior valor de theta presente nos dados
-    ax.set_ylim(0, np.radians(max_theta))
+    # Adicionar uma barra de cores
+    plt.colorbar(sc, ax=ax, label='Intensidade')
 
-    # Adicionar rótulos para os ângulos theta
-    theta_ticks = np.linspace(0, max_theta, num=6)  # Até 6 ticks no eixo radial
-    ax.set_yticks(np.radians(theta_ticks))
-    ax.set_yticklabels([f'{int(tick)}°' for tick in theta_ticks], fontsize=12)
-
-    # Adicionando a barra de cores
-    fig.colorbar(c, ax=ax, label='Intensidade')
-
+    # Exibir o gráfico
     plt.show()
 
-# Uso da função
-file_path = 'exp_Fe2_GaO_with_symmetry_0_180_blocks.txt'  # Substitua pelo caminho do novo arquivo
-df = process_block_file(file_path)  # Processa o arquivo em blocos
+# Caminho do arquivo de dados
+file_path = 'exp_Fe2P_fitted.out'  # Altere para o caminho real do seu arquivo
 
-# Gerar o gráfico polar interpolado
-plot_polar_interpolated(df)
+# Processar os dados
+df = process_file(file_path)
+
+# Plotar o gráfico polar
+plot_polar(df)
