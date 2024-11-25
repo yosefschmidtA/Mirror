@@ -5,12 +5,8 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="ea7fdd2e-a8d5-403e-bfac-032ea3b0a74e" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/simetriacerta.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Simetriam.py" beforeDir="false" afterPath="$PROJECT_DIR$/Simetriam.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/exp_Fe2_GaO_with_symmetry_blocks.txt" beforeDir="false" afterPath="$PROJECT_DIR$/exp_Fe2_GaO_with_symmetry_blocks.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/main.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/plotsimetria.py" beforeDir="false" afterPath="$PROJECT_DIR$/plotsimetria.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/simetriacerta.py" beforeDir="false" afterPath="$PROJECT_DIR$/simetriacerta.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -86,7 +82,8 @@
       <workItem from="1732021438266" duration="13164000" />
       <workItem from="1732188335919" duration="32797000" />
       <workItem from="1732335865847" duration="15418000" />
-      <workItem from="1732399060644" duration="8667000" />
+      <workItem from="1732399060644" duration="9483000" />
+      <workItem from="1732409893724" duration="6081000" />
     </task>
     <servers />
   </component>

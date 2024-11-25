@@ -46,19 +46,21 @@ def process_file(file_path):
 
 
 # Função para interpolar os dados
-def interpolate_data(df, resolution=1000):
+def interpolate_data(df, resolution=10000):
     # Converter Phi para radianos
     phi_vals = np.radians(df['Phi'])
     theta_vals = np.radians(df['Theta'])
 
-    # Usar a faixa de Phi original sem limitação fixa
-    phi_min, phi_max = np.min(phi_vals), np.max(phi_vals)
+    # Calcular o valor mínimo e máximo de Phi nos dados
+    phi_min = df['Phi'].min()  # Valor mínimo de Phi
+    phi_max = df['Phi'].max()  # Valor máximo de Phi
 
-    # Criar um grid para interpolação, abrangendo todo o intervalo de Phi
-    phi_grid, theta_grid = np.meshgrid(np.linspace(phi_min, phi_max, resolution), np.linspace(0, np.pi / 2, resolution))
+    # Grid para interpolação (ajustado para o intervalo real de Phi)
+    phi_grid, theta_grid = np.meshgrid(np.radians(np.linspace(phi_min, phi_max, resolution)),
+                                       np.linspace(0, np.pi / 2, resolution))
 
     # Interpolando a intensidade usando griddata
-    intensity_grid = griddata((phi_vals, theta_vals), df['Intensity'], (phi_grid, theta_grid), method='linear')
+    intensity_grid = griddata((phi_vals, theta_vals), df['Intensity'], (phi_grid, theta_grid), method='cubic')
 
     return phi_grid, theta_grid, intensity_grid
 
@@ -98,7 +100,7 @@ def plot_polar_interpolated(df, resolution=1000):
 
 
 # Caminho do arquivo de dados
-file_path = 'exp_Fe2P_fitted.out'
+file_path = 'exp_Fe2p_090610_theta35_fitted_V4.out'
 
 # Processar os dados
 df = process_file(file_path)
