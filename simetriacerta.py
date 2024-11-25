@@ -2,6 +2,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 from scipy.interpolate import griddata
+from scipy.stats import false_discovery_control
 
 
 def process_file(file_path):
@@ -33,7 +34,23 @@ def process_file(file_path):
     phi_max = df['Phi'].max()
     phi_interval = phi_max - phi_min
 
-    # Ajuste de indentação aqui
+    if phi_interval < 360 and df['Phi'].max() < 360:
+        # Encontrar os pontos com Phi = 0 e duplicar como Phi = 360
+        df_360 = df[df['Phi'] == 180].copy()
+        df_360['Phi'] = 360
+        df = pd.concat([df, df_360], ignore_index=True)
+
+    if phi_interval == 120:
+        df_0_120 = df.copy()
+        df_0_120['Phi'] = 120 + df_0_120['Phi']
+        df_0_120['isOriginal'] = False
+
+        df_240_360 = df.copy()
+        df_240_360['Phi'] = 240 + df_240_360['Phi']
+
+        df_full = pd.concat([df, df_0_120, df_240_360]).reset_index(drop=True)
+        return df_full
+
     if phi_interval == 90:
         # Replicar os dados para cobrir os 360 graus (marcando-os como não originais)
         df_0_90 = df.copy()
@@ -121,7 +138,7 @@ def rotate_phi(df, rotation_angle):
 
 
 # Caminho do arquivo de dados
-file_path = 'exp_Fe2_GaO.out'
+file_path = 'exCr2p_phi0.mscd'
 
 
 def save_to_txt_with_blocks(df, file_name):

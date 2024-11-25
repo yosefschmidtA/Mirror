@@ -5,9 +5,8 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="ea7fdd2e-a8d5-403e-bfac-032ea3b0a74e" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/Mirror.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/Mirror.iml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/dados_rotacionados.txt" beforeDir="false" afterPath="$PROJECT_DIR$/dados_rotacionados.txt" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/simetriacerta.py" beforeDir="false" afterPath="$PROJECT_DIR$/simetriacerta.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -101,7 +100,7 @@
     <SUITE FILE_PATH="coverage/Mirror$Simetriam.coverage" NAME="Simetriam Coverage Results" MODIFIED="1732310619304" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/Mirror$Simetrias.coverage" NAME="Simetrias Coverage Results" MODIFIED="1732194700279" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/Mirror$plotsimetria.coverage" NAME="plotsimetria Coverage Results" MODIFIED="1732536128263" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
-    <SUITE FILE_PATH="coverage/Mirror$simetriacerta.coverage" NAME="simetriacerta Coverage Results" MODIFIED="1732553432540" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/Mirror$simetriacerta.coverage" NAME="simetriacerta Coverage Results" MODIFIED="1732557715232" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/Mirror$main.coverage" NAME="main Coverage Results" MODIFIED="1732546144968" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
   </component>
 </project>
