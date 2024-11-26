@@ -3,7 +3,7 @@ function gaussn,X,Param
     n=size(Param,/n_elements)/3
     p=dblarr(3)
     ;evaluate n times,the gaussian function with the appropriated parameters set in Param vector.
-    ;Param=[xc0,sigma0,area0,xc1,sigma1,area1,...]
+    ;Param=[xc0,sigma0,area0,xc1,sigma1,ar ea1,...]
 
     functot=0.0D
     for i=0,n-1 do begin
@@ -164,7 +164,7 @@ for theta=thetai,thetaf,dtheta do begin
       endfor
       for xx=endback,nchanel-1 do begin
          background(xx)=background(endback)
-      endfor
+      endfori
       background0=background 
       ;plot,inten3v(i,j,*)
       ;oplot,background,linestyle=2

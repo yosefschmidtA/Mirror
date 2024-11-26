@@ -63,7 +63,10 @@ def normalize_and_complete_phi(df):
             df_270_360 = df.copy()
             df_270_360['Phi'] = 360 - df_270_360['Phi']
 
-            df = pd.concat([df, df_90_180, df_180_270, df_270_360], ignore_index=True)
+            df_sobre = df[df['Phi'] == 180].copy()
+            df_sobre['Phi'] = 360
+
+            df = pd.concat([df, df_90_180, df_180_270, df_270_360, df_sobre], ignore_index=True)
 
         elif phi_range <= 180:
             df_180_360 = df.copy()
@@ -129,7 +132,7 @@ def plot_polar_interpolated(df, resolution=1000):
 
 
 # Uso da função
-file_path = 'exp_Fe2P_fitted.out'  # Substitua pelo caminho do seu arquivo
+file_path = 'exp_Fe2p_090610_theta35_fitted_V4.out'  # Substitua pelo caminho do seu arquivo
 df = process_file(file_path)
 
 df = normalize_and_complete_phi(df)
