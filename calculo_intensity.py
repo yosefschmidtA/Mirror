@@ -85,8 +85,8 @@ x = df['X'].values
 y = df['Y'].values
 
 # Definir os índices initback e endback
-initback = 10  # Ajuste conforme seu critério
-endback = len(x) - 10  # Ajuste conforme seu critério
+initback = 1  # Ajuste conforme seu critério
+endback = len(x) - 1  # Ajuste conforme seu critério
 
 # Aplicar o fundo Shirley
 shirley_bg = shirley_background(x, y, initback, endback)
@@ -112,7 +112,7 @@ picos, _ = find_peaks(y_corrected, height=peak_threshold)
 # Plotagem do espectro original, fundo Shirley e espectro corrigido com picos
 plt.figure(figsize=(10, 6))
 plt.plot(x, y, label='Original', marker='o')
-plt.plot(x, shirley_bg_adjusted, label='Fundo Shirley Ajustado', linestyle='--')
+plt.plot(x, shirley_bg_adjusted, label='Fundo Shirley', linestyle='--')
 plt.plot(x, y_corrected, label='Corrigido', marker='x')
 
 # Preencher toda a área abaixo do espectro corrigido com amarelo
