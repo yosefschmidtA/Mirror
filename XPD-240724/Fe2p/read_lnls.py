@@ -1,6 +1,6 @@
 import os
 import numpy as np
-
+from scipy.integrate import trapezoid
 # Parâmetros fornecidos
 file_prefix = 'JL24_-'
 thetai = 12
@@ -68,46 +68,49 @@ with open(output_file_xps, 'w') as log_file:
                     log_file.write(f"{value} {contador_banda}\n")
 
 
-def shirley_background(x, y, initback, endback, max_iter=10000, tol=1e-6):
+def shirley_background(x_data, y_data, init_back, end_back, n_iterations=6):
     """
-    Calcula o fundo Shirley para os dados de XPS com base no procedimento fornecido.
+    Calcula o fundo de Shirley para um espectro de intensidade.
 
-    Parâmetros:
-    - x: array-like, valores do eixo X (e.g., energia de ligação)
-    - y: array-like, valores do eixo Y (e.g., intensidade)
-    - initback: índice inicial para o cálculo do fundo
-    - endback: índice final para o cálculo do fundo
-    - max_iter: número máximo de iterações (padrão: 10000)
-    - tol: tolerância para convergência (padrão: 1e-6)
+    Parameters:
+    x_data (array): O vetor de energias de ligação (ou qualquer outra variável x).
+    y_data (array): O vetor de intensidades do espectro.
+    init_back (int): Índice inicial para calcular o fundo.
+    end_back (int): Índice final para calcular o fundo.
+    n_iterations (int): Número de iterações para refinar o fundo.
 
-    Retorna:
-    - bg: array, o fundo calculado para cada ponto de x
+    Returns:
+    background (array): O vetor de fundo calculado.
     """
-    bg = np.zeros_like(y)
-    background0 = np.zeros_like(y)
-    for iteration in range(max_iter):
-        new_bg = np.copy(bg)
+    # Inicializa o vetor de fundo com os valores nas extremidades
+    background = np.zeros_like(y_data)
+    background0 = np.zeros_like(y_data)
 
-        # Cálculo do fundo Shirley
-        a = y[initback]
-        b = y[endback]
-        for i in range(initback, endback, -1):
-            sum1 = np.sum(y[initback:i] - background0[initback:i])
-            sum2 = np.sum(y[initback:endback] - background0[initback:endback])
-            new_bg[i] = (a - b) * (sum1 / sum2) + b
+    # Definindo os valores de intensidade nas extremidades
+    a = y_data[init_back]
+    b = y_data[end_back]
 
-        # Ajuste para os pontos antes do initback e depois do endback
-        new_bg[:initback] = new_bg[initback]
-        new_bg[endback:] = new_bg[endback]
+    # Calcula o fundo de Shirley por n iterações
+    for nint in range(n_iterations):
+        for k2 in range(end_back, init_back - 1, -1):
+            sum1 = 0
+            sum2 = 0
+            for k in range(end_back, k2 - 1, -1):
+                sum1 += y_data[k] - background0[k]
+            for k in range(end_back, init_back - 1, -1):
+                sum2 += y_data[k] - background0[k]
 
-        # Verificando convergência
-        if np.max(np.abs(new_bg - bg)) < tol:
-            break
+            # Calcula o fundo interpolado entre as extremidades
+            background[k2] = (a - b) * sum1 / sum2 + b
 
-        bg = new_bg
-        background0 = np.copy(bg)
+        # Ajuste o fundo para as extremidades
+        background[:init_back] = background[init_back]
+        background[end_back:] = background[end_back]
 
-    return bg
+        # Atualiza o fundo de referência para a próxima iteração
+        background0 = background.copy()
+
+    return background
 
 
 def process_file(file_name, output_file):
@@ -141,8 +144,10 @@ def process_file(file_name, output_file):
     # Grava os resultados corrigidos no arquivo de saída
     with open(output_file, 'w') as out_file:
         for header, block_data in corrected_data:
-            out_file.write(f"{header}\n")
-            for y_corr, x in block_data:
+            # Agora, extraímos a área total do segundo valor retornado por process_block
+            _, total_area = block_data
+            out_file.write(f"{header} {total_area:.1f}\n")
+            for y_corr, x in block_data[0]:  # Escreve os dados corrigidos
                 out_file.write(f"{y_corr:.2f} {x}\n")
 
 
@@ -162,7 +167,11 @@ def process_block(block):
 
     # Corrige os valores de intensidade
     y_corrected = y_values - bg
-    return list(zip(y_corrected, x_values))
+    total_area = trapezoid(np.abs(y_corrected), x_values)
+
+    # Imprimir a área total
+    print(f'Área total corrigida: {total_area}')
+    return list(zip(y_corrected, x_values)), total_area
 
 
 # Arquivos de entrada e saída
