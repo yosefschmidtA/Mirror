@@ -2,79 +2,77 @@ import numpy as np
 import matplotlib.pyplot as plt
 from scipy.integrate import trapezoid
 from scipy.signal import find_peaks
+from io import StringIO
+import pandas as pd
 
-
-def shirley_background(x, y, initback, endback, max_iter=10000, tol=1e-6):
+def shirley_background(x_data, y_data, init_back, end_back, n_iterations=6):
     """
-    Calcula o fundo Shirley para os dados de XPS com base no procedimento fornecido.
+    Calcula o fundo de Shirley para um espectro de intensidade.
 
-    Parâmetros:
-    - x: array-like, valores do eixo X (e.g., energia de ligação)
-    - y: array-like, valores do eixo Y (e.g., intensidade)
-    - initback: índice inicial para o cálculo do fundo
-    - endback: índice final para o cálculo do fundo
-    - max_iter: número máximo de iterações (padrão: 10000)
-    - tol: tolerância para convergência (padrão: 1e-6)
+    Parameters:
+    x_data (array): O vetor de energias de ligação (ou qualquer outra variável x).
+    y_data (array): O vetor de intensidades do espectro.
+    init_back (int): Índice inicial para calcular o fundo.
+    end_back (int): Índice final para calcular o fundo.
+    n_iterations (int): Número de iterações para refinar o fundo.
 
-    Retorna:
-    - bg: array, o fundo calculado para cada ponto de x
+    Returns:
+    background (array): O vetor de fundo calculado.
     """
-    bg = np.zeros_like(y)
-    background0 = np.zeros_like(y)
-    for iteration in range(max_iter):
-        new_bg = np.copy(bg)
+    # Inicializa o vetor de fundo com os valores nas extremidades
+    background = np.zeros_like(y_data)
+    background0 = np.zeros_like(y_data)
 
-        # Cálculo do fundo Shirley
-        a = y[initback]
-        b = y[endback]
-        for i in range(initback, endback, -1):
-            sum1 = np.sum(y[initback:i] - background0[initback:i])
-            sum2 = np.sum(y[initback:endback] - background0[initback:endback])
-            new_bg[i] = (a - b) * (sum1 / sum2) + b
+    # Definindo os valores de intensidade nas extremidades
+    a = y_data[init_back]
+    b = y_data[end_back]
 
-        # Ajuste para os pontos antes do initback e depois do endback
-        new_bg[:initback] = new_bg[initback]
-        new_bg[endback:] = new_bg[endback]
+    # Calcula o fundo de Shirley por n iterações
+    for nint in range(n_iterations):
+        for k2 in range(end_back, init_back - 1, -1):
+            sum1 = 0
+            sum2 = 0
+            for k in range(end_back, k2 - 1, -1):
+                sum1 += y_data[k] - background0[k]
+            for k in range(end_back, init_back - 1, -1):
+                sum2 += y_data[k] - background0[k]
 
-        # Verificando convergência
-        if np.max(np.abs(new_bg - bg)) < tol:
-            break
+            # Calcula o fundo interpolado entre as extremidades
+            background[k2] = (a - b) * sum1 / sum2 + b
 
-        bg = new_bg
-        background0 = np.copy(bg)
+        # Ajuste o fundo para as extremidades
+        background[:init_back] = background[init_back]
+        background[end_back:] = background[end_back]
 
-    return bg
+        # Atualiza o fundo de referência para a próxima iteração
+        background0 = background.copy()
+
+    return background
 
 
 # Dados fornecidos pelo usuário
 data = """
-29769 1123.99988
-30481 1123.49988
-31333 1122.99988
-32358 1122.49988
-32797 1121.99988
-35311 1121.49988
-40265 1120.99988
-48905 1120.49988
-61725 1119.99988
-79495 1119.49988
-90546 1118.99988
-87013 1118.49988
-71519 1117.99988
-55532 1117.49988
-44807 1116.99988
-39643 1116.49988
-34716 1115.99988
-31517 1115.49988
-30025 1114.99988
-29731 1114.49988
-28387 1113.99988
+29846.00 1
+29959.00 2
+30482.00 3
+30104.00 4
+31490.00 5
+31852.00 6
+32896.00 7
+34780.00 8
+35965.00 9
+34554.00 10
+31609.00 11
+29685.00 12
+27405.00 13
+26666.00 14
+26401.00 15
+25505.00 16
+25315.00 17
+26364.00 18
 """
 
 # Conversão dos dados para DataFrame
-from io import StringIO
-import pandas as pd
-
 df = pd.read_csv(StringIO(data), sep='\s+', header=None, names=['Y', 'X'])
 
 # Ordenar os dados por X em ordem crescente
@@ -85,11 +83,11 @@ x = df['X'].values
 y = df['Y'].values
 
 # Definir os índices initback e endback
-initback = 1  # Ajuste conforme seu critério
-endback = len(x) - 1  # Ajuste conforme seu critério
+init_back = 1  # Ajuste conforme seu critério
+end_back = len(x) - 1  # Ajuste conforme seu critério
 
 # Aplicar o fundo Shirley
-shirley_bg = shirley_background(x, y, initback, endback)
+shirley_bg = shirley_background(x, y, init_back, end_back)
 
 # Ajustar o fundo para começar no valor de 30.000 (ou outro valor conforme necessário)
 shirley_bg_adjusted = shirley_bg + (y[0] - shirley_bg[0])
