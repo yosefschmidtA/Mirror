@@ -1,6 +1,7 @@
 import os
 import numpy as np
 from scipy.integrate import trapezoid
+import pandas as pd
 # Parâmetros fornecidos
 file_prefix = 'JL24_-'
 thetai = 12
@@ -181,3 +182,42 @@ output_file = "saidashirley.txt"
 # Processa o arquivo
 process_file(file_name, output_file)
 
+
+def process_file_2(output_file):
+    """
+    Lê o arquivo de entrada, processa os dados e salva em um DataFrame.
+    Modificado para salvar apenas o valor da primeira, segunda e quarta coluna.
+    """
+    with open(output_file, 'r') as file:
+        data = file.readlines()
+
+    # Lista para armazenar os resultados
+    results = []
+
+    # Processa cada linha do arquivo
+    for line in data:
+        columns = line.strip().split()
+
+        if len(columns) == 4:  # Linha com 4 colunas (dados de theta, phi, channel e intensidade)
+            # Salva o valor da primeira, segunda e quarta coluna
+            theta = float(columns[0])  # Primeira coluna
+            phi = float(columns[1])    # Segunda coluna
+            intensity = float(columns[3])  # Quarta coluna
+
+            # Adiciona os resultados na lista
+            results.append({'theta': theta, 'phi': phi, 'intensity': intensity})
+
+    # Cria o DataFrame com os dados
+    df = pd.DataFrame(results)
+
+    return df
+
+# Processa o arquivo e salva os resultados em um DataFrame
+df = process_file_2("saidashirley.txt")
+
+# Salva o DataFrame em um arquivo .txt
+output_txt_file = "saidatpintensity.txt"
+with open(output_txt_file, 'w') as f:
+    f.write(df.to_string(index=False))  # Salva os dados sem o índice
+
+print(f"Dados salvos em {output_txt_file}")
