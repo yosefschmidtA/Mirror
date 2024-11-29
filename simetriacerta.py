@@ -138,7 +138,7 @@ def rotate_phi(df, rotation_angle):
 
 
 # Caminho do arquivo de dados
-file_path = 'exCr2p_phi0.mscd'
+file_path = 'coeficientes_ajustados.txt'
 
 
 def save_to_txt_with_blocks(df, file_name):

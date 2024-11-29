@@ -4,7 +4,7 @@ from scipy.integrate import trapezoid
 import pandas as pd
 import matplotlib.pyplot as plt
 from scipy.optimize import curve_fit
-
+from scipy.ndimage import gaussian_filter1d
 
 # Parâmetros fornecidos
 file_prefix = 'JL24_-'
@@ -155,6 +155,12 @@ def process_file(file_name, output_file):
             for y_corr, x in block_data[0]:  # Escreve os dados corrigidos
                 out_file.write(f"{y_corr:.2f} {x}\n")
 
+def poly_fit(x, y, degree=3):
+    coefficients = np.polyfit(x, y, degree)
+    return coefficients
+def smooth(data, sigma=2):
+    return gaussian_filter1d(data, sigma=sigma)
+
 
 def process_block(block):
     """
@@ -163,16 +169,29 @@ def process_block(block):
     y_values = np.array([row[0] for row in block])
     x_values = np.array([row[1] for row in block])
 
-    # Define os índices iniciais e finais do fundo
-    initback = 0
-    endback = len(x_values) - 1
+
+    y_smoothed = smooth(y_values, sigma=1)
+
+    # Definir os índices initback e endback
+    init_back = 1  # Ajuste conforme seu critério
+    end_back = len(x_values) - 1  # Ajuste conforme seu critério
+
+    # Aplicar o fundo Shirley
+    shirley_bg = shirley_background(x_values, y_smoothed, init_back, end_back)
+
+    # Ajustar o fundo para começar no valor de 30.000 (ou outro valor conforme necessário)
+    shirley_bg_adjusted = shirley_bg + (y_values[0] - shirley_bg[0])
 
     # Calcula o fundo Shirley
-    bg = shirley_background(x_values, y_values, initback, endback)
+    bg = shirley_background(x_values, y_smoothed, init_back, end_back)
 
     # Corrige os valores de intensidade
-    y_corrected = y_values - bg
-    total_area = trapezoid(np.abs(y_corrected), x_values)
+    y_corrected = y_smoothed - bg
+    # Filtra os valores positivos de y_corrected
+    positive_values = np.where(y_corrected > 0, y_corrected, 0)
+    # Calcula a área apenas para os valores positivos
+    total_area = trapezoid(positive_values, x_values)
+
 
     # Imprimir a área total
     print(f'Área total corrigida: {total_area}')
@@ -232,7 +251,7 @@ def polynomial_3(x, a, b, c, d):
     return a * x ** 3 + b * x ** 2 + c * x + d
 
 
-def process_and_plot(input_file, output_file, plot_dir="plots"):
+def process_and_plot(input_file, output_file, plot_dir="plots", phi_values_to_evaluate=None):
     # Lê os dados do arquivo, pulando a primeira linha
     data = pd.read_csv(input_file, sep='\s+', skiprows=1, names=['theta', 'phi', 'intensity'])
 
@@ -253,8 +272,8 @@ def process_and_plot(input_file, output_file, plot_dir="plots"):
             a, b, c, d = popt
             results.append({'theta': theta, 'a': a, 'b': b, 'c': c, 'd': d})
 
-            # Criação de valores de phi para plotagem suave
-            phi_fine = np.linspace(phi.min(), phi.max(), 500)
+            # Criando valores de phi de acordo com o intervalo definido
+            phi_fine = np.arange(phii, phif + dphi, dphi)  # Usando phi_values
             intensity_fitted = polynomial_3(phi_fine, *popt)
 
             # Plotando os dados e o ajuste
@@ -273,6 +292,12 @@ def process_and_plot(input_file, output_file, plot_dir="plots"):
             plt.close()
             print(f"Gráfico salvo em: {plot_filename}")
 
+            # Se phi_values_to_evaluate for fornecido, calcule os valores para os pontos de phi fornecidos
+            if phi_values_to_evaluate is not None:
+                for phi_value in phi_values_to_evaluate:
+                    intensity_at_phi = polynomial_3(phi_value, *popt)  # Calcula o valor da intensidade
+                    print(f"Valor da intensidade para phi = {phi_value} (theta = {theta}): {intensity_at_phi}")
+
         except Exception as e:
             print(f"Erro ao ajustar os dados para theta = {theta}: {e}")
             continue
@@ -284,6 +309,55 @@ def process_and_plot(input_file, output_file, plot_dir="plots"):
     results_df.to_csv(output_file, index=False, float_format='%.6f')
     print(f"Resultados salvos em {output_file}")
 
+    # Formato do cabeçalho do arquivo de saída
+    num_theta = results_df['theta'].nunique()  # Número de ângulos theta únicos
+    num_phi = len(phi_fine)  # Número de ângulos phi únicos
+    num_points = len(data)  # Total de pontos
+    theta_initial = results_df['theta'].min()  # Valor inicial de Theta
+    phi_values = np.arange(phii, phii + dphi, dphi)
+    # Salvando os dados ajustados no formato esperado
+    with open(output_file, 'w') as file:
+        # Cabeçalho inicial
+        file.write(f"      {num_theta}    {num_points}    0     datakind beginning-row linenumbers\n")
+        file.write(f"MSCD Version 1.00 Yufeng Chen and Michel A Van Hove\n")
+        file.write(f"Lawrence Berkeley National Laboratory (LBNL), Berkeley, CA 94720\n")
+        file.write(f"Copyright (c) Van Hove Group 1997. All rights reserved\n")
+        file.write(f"--------------------------------------------------------------\n")
+        file.write(f"angle-resolved photoemission extended fine structure (ARPEFS)\n")
+        file.write(f"experimental data for Fe 2p3/2 from Fe on STO(100)  excited with hv=1810eV\n")
+        file.write(f"provided by Pancotti et al. (LNLS in 9, June 2010)\n")
+        file.write(f"   intial angular momentum (l) = 1\n")
+        file.write(f"   photon polarization angle (polar,azimuth) = (  30.0,   0.0 ) (deg)\n")
+        file.write(f"   sample temperature = 300 K\n")
+        file.write(f"   photoemission angular scan curves\n")
+        file.write(f"     (curve point theta phi weightc weighte//k intensity chiexp)\n")
+        file.write(f"      {num_theta}     {num_points}       1       {num_theta}     {num_phi}     {num_points}\n")
+
+        # Loop para os diferentes valores de θ
+        number_of_theta = 0
+        for theta in sorted(results_df['theta'].unique()):
+            number_of_theta += 1
+            first_row = results_df[results_df['theta'] == theta].iloc[0]
+            file.write(
+                f"       {number_of_theta}     {num_phi}       19.5900     {first_row['theta']:.4f}      1.00000      0.00000\n"
+            )
+            subset = results_df[results_df['theta'] == theta]
+
+            # Recalcula phi_fine e intensity_fitted aqui dentro do loop
+            phi_fine = np.arange(phii, phif + dphi, dphi)
+            intensity_fitted = polynomial_3(phi_fine, *[first_row['a'], first_row['b'], first_row['c'], first_row['d']])
+
+            # Calcular a média da intensidade ajustada
+            mean_intensity = np.mean(intensity_fitted)
+
+            # Calcular Chi para cada valor de phi_fine
+            Chi = (intensity_fitted - mean_intensity) / mean_intensity
+
+            # Escreve cada valor de phi_fine, intensity_fitted, mean_intensity e Chi em uma linha separada
+            for p, i, chi in zip(phi_fine, intensity_fitted, Chi):
+                file.write(f"      {p:.5f}      {i:.1f}      {mean_intensity:.1f}      {chi:.7f}\n")
+            file.write("")  # Linha em branco para separar os blocos de dados
+
 
 # Arquivos de entrada e saída
 input_file = "saidatpintensity.txt"  # Substitua pelo nome do seu arquivo
@@ -292,5 +366,8 @@ plot_dir = "plots"
 
 os.makedirs(plot_dir, exist_ok=True)
 
+phi_values = np.arange(phii, phii + dphi, dphi)
+
 # Executa o processamento e plotagem
-process_and_plot(input_file, output_file, plot_dir)
+process_and_plot(input_file, output_file, plot_dir, phi_values)
+
