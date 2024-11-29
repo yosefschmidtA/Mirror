@@ -2,6 +2,10 @@ import os
 import numpy as np
 from scipy.integrate import trapezoid
 import pandas as pd
+import matplotlib.pyplot as plt
+from scipy.optimize import curve_fit
+
+
 # Parâmetros fornecidos
 file_prefix = 'JL24_-'
 thetai = 12
@@ -221,3 +225,72 @@ with open(output_txt_file, 'w') as f:
     f.write(df.to_string(index=False))  # Salva os dados sem o índice
 
 print(f"Dados salvos em {output_txt_file}")
+
+
+# Função para o polinômio de grau 3
+def polynomial_3(x, a, b, c, d):
+    return a * x ** 3 + b * x ** 2 + c * x + d
+
+
+def process_and_plot(input_file, output_file, plot_dir="plots"):
+    # Lê os dados do arquivo, pulando a primeira linha
+    data = pd.read_csv(input_file, sep='\s+', skiprows=1, names=['theta', 'phi', 'intensity'])
+
+    # Agrupa os dados por theta
+    grouped = data.groupby('theta')
+
+    # Lista para armazenar os resultados
+    results = []
+
+    # Processa cada grupo de theta
+    for theta, group in grouped:
+        phi = group['phi'].values
+        intensity = group['intensity'].values
+
+        # Ajuste polinomial
+        try:
+            popt, _ = curve_fit(polynomial_3, phi, intensity)
+            a, b, c, d = popt
+            results.append({'theta': theta, 'a': a, 'b': b, 'c': c, 'd': d})
+
+            # Criação de valores de phi para plotagem suave
+            phi_fine = np.linspace(phi.min(), phi.max(), 500)
+            intensity_fitted = polynomial_3(phi_fine, *popt)
+
+            # Plotando os dados e o ajuste
+            plt.figure(figsize=(8, 6))
+            plt.scatter(phi, intensity, label="Dados experimentais", color="blue")
+            plt.plot(phi_fine, intensity_fitted, label="Ajuste polinomial", color="red", linewidth=2)
+            plt.title(f"Ajuste Polinomial de Grau 3 - Theta = {theta}")
+            plt.xlabel("Phi")
+            plt.ylabel("Intensity")
+            plt.legend()
+            plt.grid()
+
+            # Salvando o gráfico
+            plot_filename = f"{plot_dir}/fit_theta_{theta:.1f}.png"
+            plt.savefig(plot_filename, dpi=300)
+            plt.close()
+            print(f"Gráfico salvo em: {plot_filename}")
+
+        except Exception as e:
+            print(f"Erro ao ajustar os dados para theta = {theta}: {e}")
+            continue
+
+    # Cria um DataFrame com os coeficientes ajustados
+    results_df = pd.DataFrame(results)
+
+    # Salva os coeficientes no arquivo de saída
+    results_df.to_csv(output_file, index=False, float_format='%.6f')
+    print(f"Resultados salvos em {output_file}")
+
+
+# Arquivos de entrada e saída
+input_file = "saidatpintensity.txt"  # Substitua pelo nome do seu arquivo
+output_file = "coeficientes_ajustados.txt"
+plot_dir = "plots"
+
+os.makedirs(plot_dir, exist_ok=True)
+
+# Executa o processamento e plotagem
+process_and_plot(input_file, output_file, plot_dir)
