@@ -6,6 +6,7 @@ import matplotlib.pyplot as plt
 from scipy.optimize import curve_fit
 from scipy.ndimage import gaussian_filter1d
 
+
 # Parâmetros fornecidos
 file_prefix = 'JL24_-'
 thetai = 12
@@ -14,7 +15,7 @@ dtheta = 3
 phii = 0
 phif = 357
 dphi = 3
-channel = 18
+channel = 711.49994
 
 # Função para gerar os nomes dos arquivos esperados
 def generate_file_names(prefix, thetai, thetaf, dtheta, phii, phif, dphi):
@@ -59,7 +60,7 @@ with open(output_file_xps, 'w') as log_file:
 
                 if len(columns) == 7:  # Linha com 7 colunas (cabeçalho)
                     # Verifique se a sexta coluna tem o valor 18
-                    if float(columns[5]) == channel:  # Coluna 6 (índice 5)
+                    if float(columns[0]) == channel:  # Coluna 6 (índice 5)
                         data_valid = True  # Ativa o flag para processar os dados subsequentes
 
                         log_file.write(f"\n{theta} {phi} {channel}\n")
@@ -158,7 +159,7 @@ def process_file(file_name, output_file):
 def poly_fit(x, y, degree=3):
     coefficients = np.polyfit(x, y, degree)
     return coefficients
-def smooth(data, sigma=2):
+def smooth(data, sigma=1):
     return gaussian_filter1d(data, sigma=sigma)
 
 
@@ -278,7 +279,7 @@ def process_and_plot(input_file, output_file, plot_dir="plots", phi_values_to_ev
 
             # Plotando os dados e o ajuste
             plt.figure(figsize=(8, 6))
-            plt.scatter(phi, intensity, label="Dados experimentais", color="blue")
+            plt.plot(phi, intensity, linestyle='-', color='blue', alpha=0.5, label="Dados experimentais")
             plt.plot(phi_fine, intensity_fitted, label="Ajuste polinomial", color="red", linewidth=2)
             plt.title(f"Ajuste Polinomial de Grau 3 - Theta = {theta}")
             plt.xlabel("Phi")
@@ -295,7 +296,7 @@ def process_and_plot(input_file, output_file, plot_dir="plots", phi_values_to_ev
             # Se phi_values_to_evaluate for fornecido, calcule os valores para os pontos de phi fornecidos
             if phi_values_to_evaluate is not None:
                 for phi_value in phi_values_to_evaluate:
-                    intensity_at_phi = polynomial_3(phi_value, *popt)  # Calcula o valor da intensidade
+                    intensity_at_phi = polynomial_3(phi_value, *popt)
                     print(f"Valor da intensidade para phi = {phi_value} (theta = {theta}): {intensity_at_phi}")
 
         except Exception as e:
@@ -315,6 +316,7 @@ def process_and_plot(input_file, output_file, plot_dir="plots", phi_values_to_ev
     num_points = len(data)  # Total de pontos
     theta_initial = results_df['theta'].min()  # Valor inicial de Theta
     phi_values = np.arange(phii, phii + dphi, dphi)
+
     # Salvando os dados ajustados no formato esperado
     with open(output_file, 'w') as file:
         # Cabeçalho inicial
@@ -343,18 +345,31 @@ def process_and_plot(input_file, output_file, plot_dir="plots", phi_values_to_ev
             )
             subset = results_df[results_df['theta'] == theta]
 
+            # Obtendo os dados experimentais de intensity e phi
+            group = data[data['theta'] == theta]
+            phi = group['phi'].values
+            intensity = group['intensity'].values
+
             # Recalcula phi_fine e intensity_fitted aqui dentro do loop
             phi_fine = np.arange(phii, phif + dphi, dphi)
-            intensity_fitted = polynomial_3(phi_fine, *[first_row['a'], first_row['b'], first_row['c'], first_row['d']])
 
-            # Calcular a média da intensidade ajustada
-            mean_intensity = np.mean(intensity_fitted)
+            for _, row in subset.iterrows():
+                # Pega os coeficientes ajustados do polinômio
+                a, b, c, d = row['a'], row['b'], row['c'], row['d']
 
-            # Calcular Chi para cada valor de phi_fine
-            Chi = (intensity_fitted - mean_intensity) / mean_intensity
+                # Calcular intensidade ajustada para os valores de phi
+                intensity_fitted = polynomial_3(phi_fine, a, b, c, d)
+
+                # Calcular a média da intensidade ajustada
+                mean_intensity = np.mean(intensity_fitted)
+
+                # Calcular Chi para cada valor de phi
+                Chi = ((intensity - mean_intensity) / mean_intensity)
+
+
 
             # Escreve cada valor de phi_fine, intensity_fitted, mean_intensity e Chi em uma linha separada
-            for p, i, chi in zip(phi_fine, intensity_fitted, Chi):
+            for p, i, chi in zip(phi, intensity, Chi):
                 file.write(f"      {p:.5f}      {i:.1f}      {mean_intensity:.1f}      {chi:.7f}\n")
             file.write("")  # Linha em branco para separar os blocos de dados
 
