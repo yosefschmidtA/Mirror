@@ -74,7 +74,7 @@ with open(output_file_xps, 'w') as log_file:
                     log_file.write(f"{value} {contador_banda}\n")
 
 
-def shirley_background(x_data, y_data, init_back, end_back, n_iterations=6):
+def shirley_background(x_data, y_data, init_back, end_back, n_iterations=20):
     """
     Calcula o fundo de Shirley para um espectro de intensidade.
 
@@ -156,9 +156,7 @@ def process_file(file_name, output_file):
             for y_corr, x in block_data[0]:  # Escreve os dados corrigidos
                 out_file.write(f"{y_corr:.2f} {x}\n")
 
-def poly_fit(x, y, degree=3):
-    coefficients = np.polyfit(x, y, degree)
-    return coefficients
+
 def smooth(data, sigma=1):
     return gaussian_filter1d(data, sigma=sigma)
 

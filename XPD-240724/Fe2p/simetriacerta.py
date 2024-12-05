@@ -193,9 +193,9 @@ def save_to_txt_with_blocks(df, file_name):
 # Processar os dados
 df = process_file(file_path)
 
-df = rotate_phi(df, 0)
+df = rotate_phi(df, 20)
 
 
-save_to_txt_with_blocks(df, 'exp.txt')
+save_to_txt_with_blocks(df, 'exp_Fe2_GaO.out')
 
 plot_polar_interpolated(df)
