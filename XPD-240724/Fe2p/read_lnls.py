@@ -169,35 +169,42 @@ def process_block(block):
 
     def interp_func(x):
         return np.interp(x, x_values, positive_values)
-    y_values = np.array([row[0] for row in block])
-    x_values = np.array([row[1] for row in block])
 
+    # Extrair valores de x e y do bloco
+    y_values = np.array([row[0] for row in block])  # Intensidades
+    x_values = np.array([row[1] for row in block])  # Índices/canais
 
-    y_smoothed = smooth(y_values, sigma=1)
+    # Alisamento inicial nos dados brutos
+    y_smoothed_raw = smooth(y_values, sigma=1)
 
-    # Definir os índices initback e endback
+    # Definir os índices init_back e end_back para o Shirley
     init_back = 0  # Ajuste conforme seu critério
     end_back = len(x_values) - 1  # Ajuste conforme seu critério
 
-    # Aplicar o fundo Shirley
+    # Aplicar o fundo Shirley nos dados brutos (não suavizados inicialmente)
     shirley_bg = shirley_background(x_values, y_values, init_back, end_back)
 
+    # Corrigir os valores de intensidade (dados brutos menos fundo)
+    y_corrected_raw = y_values - shirley_bg
 
+    # Aplicar o fundo Shirley nos dados suavizados
+    shirley_bg_smoothed = shirley_background(x_values, y_smoothed_raw, init_back, end_back)
 
-    # Calcula o fundo Shirley
-    bg = shirley_background(x_values, y_smoothed, init_back, end_back)
+    # Corrigir os valores de intensidade suavizados
+    y_corrected_smoothed = y_smoothed_raw - shirley_bg_smoothed
 
-    # Corrige os valores de intensidade
-    y_corrected = y_smoothed - bg
-    positive_values = y_corrected.copy()
+    # Forçar valores positivos (removendo possíveis artefatos negativos)
+    positive_values = y_corrected_smoothed.copy()
     positive_values[positive_values < 0] = 0
-    # Calcula a área apenas para os valores positivos
-    total_area = trapezoid(positive_values,x_values)
 
+    # Calcula a área apenas para os valores positivos
+    total_area = trapezoid(positive_values, x_values)
 
     # Imprimir a área total
     print(f'Área total corrigida: {total_area}')
-    return list(zip(y_corrected, x_values)), total_area
+
+    # Retornar os dados corrigidos e a área total
+    return list(zip(y_corrected_smoothed, x_values)), total_area
 
 
 # Arquivos de entrada e saída
@@ -542,7 +549,7 @@ for i, theta in enumerate(theta_values):
     intensity_values[i, :] = theta_data.sort_values(by='Phi')['Intensity'].values
 
 # Grau de simetria (ex.: 4 para C4)
-symmetry = 2
+symmetry = 4
 
 # Aplicar simetrização
 intensity_symmetric = fourier_symmetrization(theta_values, phi_values, intensity_values, symmetry)
