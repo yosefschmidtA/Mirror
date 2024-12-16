@@ -72,7 +72,7 @@ def process_file(file_path):
 
 
 # Função para interpolar os dados
-def interpolate_data(df, resolution=1000):
+def interpolate_data(df, resolution=10000):
     # Definir uma grade regular para a interpolação
     phi = np.radians(df['Phi'])
     theta = np.radians(df['Theta'])
@@ -86,13 +86,13 @@ def interpolate_data(df, resolution=1000):
     phi_grid, theta_grid = np.meshgrid(phi_grid, theta_grid)
 
     # Realizar a interpolação
-    intensity_grid = griddata((phi, theta), intensity, (phi_grid, theta_grid), method='cubic')
+    intensity_grid = griddata((phi, theta), intensity, (phi_grid, theta_grid), method='linear')
 
     return phi_grid, theta_grid, intensity_grid
 
 
 # Função para gerar o gráfico polar
-def plot_polar_interpolated(df, resolution=1000):
+def plot_polar_interpolated(df, resolution=500):
     # Interpolar os dados
     phi_grid, theta_grid, intensity_grid = interpolate_data(df, resolution)
 
@@ -138,7 +138,7 @@ def rotate_phi(df, rotation_angle):
 
 
 # Caminho do arquivo de dados
-file_path = 'coeficientes_ajustados.txt'
+file_path = 'simetrizados.txt'
 
 
 def save_to_txt_with_blocks(df, file_name):
@@ -193,9 +193,9 @@ def save_to_txt_with_blocks(df, file_name):
 # Processar os dados
 df = process_file(file_path)
 
-df = rotate_phi(df, 20)
+df = rotate_phi(df, 0)
 
 
-save_to_txt_with_blocks(df, 'exp_Fe2_GaO.out')
+save_to_txt_with_blocks(df, 'teste.txt')
 
 plot_polar_interpolated(df)

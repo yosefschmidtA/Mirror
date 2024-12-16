@@ -1,10 +1,11 @@
 import os
 import numpy as np
-from scipy.integrate import trapezoid
 import pandas as pd
 import matplotlib.pyplot as plt
+from scipy.integrate import trapezoid
 from scipy.optimize import curve_fit
 from scipy.ndimage import gaussian_filter1d
+
 
 
 # Parâmetros fornecidos
@@ -165,6 +166,9 @@ def process_block(block):
     """
     Processa um bloco de 18 pontos aplicando o fundo Shirley.
     """
+
+    def interp_func(x):
+        return np.interp(x, x_values, positive_values)
     y_values = np.array([row[0] for row in block])
     x_values = np.array([row[1] for row in block])
 
@@ -172,24 +176,23 @@ def process_block(block):
     y_smoothed = smooth(y_values, sigma=1)
 
     # Definir os índices initback e endback
-    init_back = 1  # Ajuste conforme seu critério
+    init_back = 0  # Ajuste conforme seu critério
     end_back = len(x_values) - 1  # Ajuste conforme seu critério
 
     # Aplicar o fundo Shirley
-    shirley_bg = shirley_background(x_values, y_smoothed, init_back, end_back)
+    shirley_bg = shirley_background(x_values, y_values, init_back, end_back)
 
-    # Ajustar o fundo para começar no valor de 30.000 (ou outro valor conforme necessário)
-    shirley_bg_adjusted = shirley_bg + (y_values[0] - shirley_bg[0])
+
 
     # Calcula o fundo Shirley
     bg = shirley_background(x_values, y_smoothed, init_back, end_back)
 
     # Corrige os valores de intensidade
     y_corrected = y_smoothed - bg
-    # Filtra os valores positivos de y_corrected
-    positive_values = np.where(y_corrected > 0, y_corrected, 0)
+    positive_values = y_corrected.copy()
+    positive_values[positive_values < 0] = 0
     # Calcula a área apenas para os valores positivos
-    total_area = trapezoid(positive_values, x_values)
+    total_area = trapezoid(positive_values,x_values)
 
 
     # Imprimir a área total
@@ -319,16 +322,19 @@ def process_and_plot(input_file, output_file, plot_dir="plots", phi_values_to_ev
     with open(output_file, 'w') as file:
         # Cabeçalho inicial
         file.write(f"      {num_theta}    {num_points}    0     datakind beginning-row linenumbers\n")
+        file.write(f"----------------------------------------------------------------\n")
         file.write(f"MSCD Version 1.00 Yufeng Chen and Michel A Van Hove\n")
         file.write(f"Lawrence Berkeley National Laboratory (LBNL), Berkeley, CA 94720\n")
         file.write(f"Copyright (c) Van Hove Group 1997. All rights reserved\n")
         file.write(f"--------------------------------------------------------------\n")
         file.write(f"angle-resolved photoemission extended fine structure (ARPEFS)\n")
         file.write(f"experimental data for Fe 2p3/2 from Fe on STO(100)  excited with hv=1810eV\n")
+        file.write(f"\n")
         file.write(f"provided by Pancotti et al. (LNLS in 9, June 2010)\n")
         file.write(f"   intial angular momentum (l) = 1\n")
         file.write(f"   photon polarization angle (polar,azimuth) = (  30.0,   0.0 ) (deg)\n")
         file.write(f"   sample temperature = 300 K\n")
+        file.write(f"\n")
         file.write(f"   photoemission angular scan curves\n")
         file.write(f"     (curve point theta phi weightc weighte//k intensity chiexp)\n")
         file.write(f"      {num_theta}     {num_points}       1       {num_theta}     {num_phi}     {num_points}\n")
@@ -359,11 +365,11 @@ def process_and_plot(input_file, output_file, plot_dir="plots", phi_values_to_ev
                 intensity_fitted = polynomial_3(phi_fine, a, b, c, d)
 
                 # Calcular a média da intensidade ajustada
-                mean_intensity = np.mean(intensity_fitted)
+                mean_intensity = np.mean(intensity)
 
                 # Calcular Chi para cada valor de phi
-                Chi = ((intensity - mean_intensity) / mean_intensity)
-
+                Chi = ((intensity - intensity_fitted) / intensity_fitted)
+                Chi2 =((intensity-mean_intensity) / mean_intensity)
 
 
             # Escreve cada valor de phi_fine, intensity_fitted, mean_intensity e Chi em uma linha separada
@@ -383,4 +389,174 @@ phi_values = np.arange(phii, phii + dphi, dphi)
 
 # Executa o processamento e plotagem
 process_and_plot(input_file, output_file, plot_dir, phi_values)
+
+
+def process_file(file_path):
+    with open(file_path, 'r') as file:
+        lines = file.readlines()
+
+    data = []
+    theta_value = None
+
+    for i in range(17, len(lines)):  # Começar a ler após o cabeçalho de 17 linhas
+        line = lines[i].strip()
+
+        if line:
+            parts = line.split()
+
+            if len(parts) == 6:
+                theta_value = float(parts[3])  # Lendo o valor de theta
+
+            elif len(parts) == 4 and theta_value is not None:
+                phi = float(parts[0])
+                col1 = float(parts[1])
+                col2 = float(parts[2])
+                intensity = float(parts[3])
+                data.append([phi, col1, col2, theta_value, intensity, True])  # Marcar como original
+
+    df = pd.DataFrame(data, columns=['Phi', 'Col1', 'Col2', 'Theta', 'Intensity', 'IsOriginal'])
+
+    # Debug: Verificar os valores de theta lidos
+    print("Valores de Theta lidos:", df['Theta'].unique())
+
+    return df
+
+
+def fourier_symmetrization(theta_values, phi_values, intensity_values, symmetry):
+    """
+    Aplica a simetrização por expansão em Fourier nos dados XPD.
+
+    Parameters:
+        theta_values (array): Valores de theta.
+        phi_values (array): Valores de phi.
+        intensity_values (2D array): Intensidades organizadas como [theta][phi].
+        symmetry (int): Grau de simetria (ex.: 4 para C4).
+
+    Returns:
+        intensity_symmetric (2D array): Intensidades simetrizadas.
+    """
+    n_theta = len(theta_values)
+    n_phi = len(phi_values)
+
+    # Inicializar array para intensidades simetrizadas
+    intensity_symmetric = np.zeros_like(intensity_values)
+
+    for i, theta in enumerate(theta_values):
+        # Extrair a curva de intensidade para o theta atual
+        f = intensity_values[i, :]
+
+        # Calcular a Transformada de Fourier
+        F = np.fft.fft(f)
+
+        # Criar uma cópia para armazenar apenas os componentes simétricos
+        F_symmetric = np.zeros_like(F, dtype=complex)
+
+        # Manter apenas os harmônicos que atendem à simetria (ex.: múltiplos de symmetry)
+        for u in range(0, n_phi):
+            if u % symmetry == 0:
+                F_symmetric[u] = F[u]
+
+        # Calcular a Transformada Inversa de Fourier com os componentes simétricos
+        f_symmetric = np.fft.ifft(F_symmetric).real
+
+        # Salvar a curva simetrizada
+        intensity_symmetric[i, :] = f_symmetric
+
+        # Plotar as curvas original e simetrizada (opcional)
+        plt.figure()
+        plt.plot(phi_values, f, label='Original', linestyle='--')
+        plt.plot(phi_values, f_symmetric, label=f'Simetrizado (C{symmetry})')
+        plt.title(f'Theta = {theta:.2f}')
+        plt.xlabel('Phi (°)')
+        plt.ylabel('Intensidade')
+        plt.legend()
+        plt.show()
+
+    return intensity_symmetric
+
+
+def save_to_text_file(data_df, intensity_symmetric, output_file_path):
+    """
+    Salva os dados atualizados em um arquivo de texto no formato solicitado.
+
+    Parameters:
+        data_df (DataFrame): O DataFrame com os dados.
+        intensity_symmetric (2D array): Intensidades simetrizadas.
+        output_file_path (str): O caminho do arquivo de saída.
+    """
+    with open(output_file_path, 'w') as file:
+        # Escrever o cabeçalho
+        num_theta = len(data_df['Theta'].unique())
+        num_points = len(data_df['Phi'].unique()) * num_theta
+        num_phi = len(data_df['Phi'].unique())
+        file.write(f"      {num_theta}    {num_points}    0     datakind beginning-row linenumbers\n")
+        file.write(f"----------------------------------------------------------------\n")
+        file.write(f"MSCD Version 1.00 Yufeng Chen and Michel A Van Hove\n")
+        file.write(f"Lawrence Berkeley National Laboratory (LBNL), Berkeley, CA 94720\n")
+        file.write(f"Copyright (c) Van Hove Group 1997. All rights reserved\n")
+        file.write(f"--------------------------------------------------------------\n")
+        file.write(f"angle-resolved photoemission extended fine structure (ARPEFS)\n")
+        file.write(f"experimental data for Fe 2p3/2 from Fe on STO(100)  excited with hv=1810eV\n")
+        file.write(f"\n")
+        file.write(f"provided by Pancotti et al. (LNLS in 9, June 2010)\n")
+        file.write(f"   intial angular momentum (l) = 1\n")
+        file.write(f"   photon polarization angle (polar,azimuth) = (  30.0,   0.0 ) (deg)\n")
+        file.write(f"   sample temperature = 300 K\n")
+        file.write(f"\n")
+        file.write(f"   photoemission angular scan curves\n")
+        file.write(f"     (curve point theta phi weightc weighte//k intensity chiexp)\n")
+        file.write(f"      {num_theta}     {num_points}       1       {num_theta}     {num_phi}     {num_points}\n")
+
+        number_of_theta = 0
+        for theta in sorted(data_df['Theta'].unique()):
+            number_of_theta += 1
+            first_row = data_df[data_df['Theta'] == theta].iloc[0]
+            file.write(
+                f"       {number_of_theta}     {num_phi}       19.5900     {first_row['Theta']:.4f}      1.00000      0.00000\n"
+            )
+            # Para cada valor de theta, escrever uma linha para cada valor de phi
+            theta_data = data_df[data_df['Theta'] == theta]
+            sorted_phi_indices = theta_data['Phi'].argsort()  # Ordenar os índices de Phi
+            for j, phi in enumerate(theta_data['Phi'].values[sorted_phi_indices]):
+                col1 = theta_data.iloc[j]['Col1']
+                col2 = theta_data.iloc[j]['Col2']
+                intensity = intensity_symmetric[number_of_theta - 1, j]  # Usar o índice correto
+                file.write(f"      {phi:.5f}      {col1:.1f}      {col2:.1f}      {intensity:.7f}\n")
+                file.write("")  # Linha em branco para separar os blocos de dados
+
+# Leitura dos dados
+file_path = 'coeficientes_ajustados.txt'  # Substitua pelo caminho do arquivo
+
+data_df = process_file(file_path)
+
+# Organizar os dados para a simetrização
+theta_values = np.sort(data_df['Theta'].unique())  # Garantir que os valores de theta estejam ordenados
+phi_values = data_df['Phi'].unique()
+n_theta = len(theta_values)
+n_phi = len(phi_values)
+
+# Criar uma matriz de intensidades
+intensity_values = np.zeros((n_theta, n_phi))
+for i, theta in enumerate(theta_values):
+    theta_data = data_df[data_df['Theta'] == theta]
+    intensity_values[i, :] = theta_data.sort_values(by='Phi')['Intensity'].values
+
+# Grau de simetria (ex.: 4 para C4)
+symmetry = 2
+
+# Aplicar simetrização
+intensity_symmetric = fourier_symmetrization(theta_values, phi_values, intensity_values, symmetry)
+
+# Substituir as intensidades originais no DataFrame pelos valores simetrizados
+for i, theta in enumerate(theta_values):
+    theta_data = data_df[data_df['Theta'] == theta]
+    sorted_phi_indices = np.argsort(theta_data['Phi'].values)
+    data_df.loc[theta_data.index, 'Intensity'] = intensity_symmetric[i, sorted_phi_indices]
+
+# Salvar os resultados em um arquivo de texto no formato desejado
+output_file_path = 'simetrizados.txt'  # Defina o nome do arquivo de saída
+save_to_text_file(data_df, intensity_symmetric, output_file_path)
+
+
+
 

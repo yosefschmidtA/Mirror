@@ -6,7 +6,7 @@ from io import StringIO
 import pandas as pd
 from scipy.ndimage import gaussian_filter1d
 
-def shirley_background(x_data, y_data, init_back, end_back, n_iterations=6):
+def shirley_background(x_data, y_data, init_back, end_back, n_iterations=100):
     """
     Calcula o fundo de Shirley para um espectro de intensidade.
 
@@ -73,12 +73,9 @@ data = """
 26364.0 18
 """
 
-# Conversão dos dados para DataFrame
 df = pd.read_csv(StringIO(data), sep='\s+', header=None, names=['Y', 'X'])
-def poly_fit(x, y, degree=3):
-    coefficients = np.polyfit(x, y, degree)
-    return coefficients
-def smooth(data, sigma=2):
+
+def smooth(data, sigma):
     return gaussian_filter1d(data, sigma=sigma)
 # Ordenar os dados por X em ordem crescente
 df = df.sort_values(by='X', ascending=True)
@@ -92,11 +89,10 @@ y_smoothed = smooth(y, sigma=1)
 
 
 # Definir os índices initback e endback
-init_back = 1  # Ajuste conforme seu critério
+init_back = 0  # Ajuste conforme seu critério
 end_back = len(x) - 1  # Ajuste conforme seu critério
 
-# Aplicar o fundo Shirley
-shirley_bg = shirley_background(x, y_smoothed, init_back, end_back)
+shirley_bg = shirley_background(x, y, init_back, end_back)
 
 # Ajustar o fundo para começar no valor de 30.000 (ou outro valor conforme necessário)
 shirley_bg_adjusted = shirley_bg + (y[0] - shirley_bg[0])
@@ -106,12 +102,12 @@ bg = shirley_background(x, y_smoothed, init_back, end_back)
 
 # Corrige os valores de intensidade
 y_corrected = y_smoothed - bg
-# Filtra os valores positivos de y_corrected
-positive_values = np.where(y_corrected > 0, y_corrected, 0)
+positive_values = y_corrected.copy()
+positive_values[positive_values < 0] = 0
 # Calcula a área apenas para os valores positivos
 total_area = trapezoid(positive_values, x)
 # Imprimir a área total
-print(f'Área total corrigida: {total_area}')
+print(f'Área total: {total_area}')
 
 # Detecção de picos (se desejar destacar os picos)
 peak_threshold = np.max(y_corrected)
