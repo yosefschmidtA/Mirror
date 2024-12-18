@@ -17,7 +17,9 @@ phii = 0
 phif = 357
 dphi = 3
 channel = 711.49994
+symmetry = 2
 
+output_file_path = 'simetrizados.txt'  # Defina o nome do arquivo de saída
 # Função para gerar os nomes dos arquivos esperados
 def generate_file_names(prefix, thetai, thetaf, dtheta, phii, phif, dphi):
     theta_values = [thetai + i * dtheta for i in range((thetaf - thetai) // dtheta + 1)]
@@ -39,7 +41,7 @@ existing_files = [f for f in expected_files if os.path.isfile(f)]
 
 # Listas para armazenar os dados separados
 data_one_column = []
-output_file_xps = "/home/yosef/PycharmProjects/Mirror/XPD-240724/Fe2p/saidaxps.txt"
+output_file_xps = "saidaxps.txt"
 with open(output_file_xps, 'w') as log_file:
 
     for file in existing_files:
@@ -124,6 +126,62 @@ def process_file(file_name, output_file):
     """
     Lê o arquivo de entrada e processa os dados aplicando o fundo Shirley.
     """
+
+    def process_block(block, theta_values, phi_values):
+        """
+        Processa um bloco de 18 pontos aplicando o fundo Shirley.
+        """
+
+        # Extrair valores de x e y do bloco
+        y_values = np.array([row[0] for row in block])  # Intensidades
+        x_values = np.array([row[1] for row in block])  # Índices/canais
+
+        # Alisamento inicial nos dados brutos
+        y_smoothed_raw = smooth(y_values, sigma=1)
+
+        # Definir os índices init_back e end_back para o Shirley
+        init_back = 0  # Ajuste conforme seu critério
+        end_back = len(x_values) - 1  # Ajuste conforme seu critério
+
+        # Aplicar o fundo Shirley nos dados brutos (não suavizados inicialmente)
+        shirley_bg = shirley_background(x_values, y_values, init_back, end_back)
+
+        # Aplicar o fundo Shirley nos dados suavizados
+        shirley_bg_smoothed = shirley_background(x_values, y_smoothed_raw, init_back, end_back)
+
+        # Corrigir os valores de intensidade suavizados
+        y_corrected_smoothed = y_smoothed_raw - shirley_bg_smoothed
+
+        # Forçar valores positivos (removendo possíveis artefatos negativos)
+        positive_values = y_corrected_smoothed.copy()
+        positive_values[positive_values < 0] = 0
+
+        # Calcula a área apenas para os valores positivos
+        total_area = trapezoid(positive_values, x_values)
+
+        print(f'Área total corrigida: {total_area}')
+
+        # Título com os valores de theta e phi
+        title = f"Espectro XPS com Fundo Shirley Ajustado (θ={theta_values}, φ={phi_values})"
+
+        plt.figure(figsize=(10, 6))
+        plt.plot(x_values, y_values, label='Original', marker='o')
+        plt.plot(x_values, shirley_bg, label='Fundo Shirley', linestyle='--')
+        plt.plot(x_values, y_corrected_smoothed, label='Corrigido', marker='x')
+
+        # Preencher toda a área abaixo do espectro corrigido com amarelo
+        plt.fill_between(x_values, positive_values, color='yellow', alpha=0.5)
+
+        plt.xlabel('Energia de Ligação (eV)')
+        plt.ylabel('Intensidade')
+        plt.title(title)  # Atualiza o título com os valores de theta e phi
+        plt.legend()
+        plt.grid(True)
+        plt.show()
+
+        # Retornar os dados corrigidos e a área total
+        return list(zip(y_corrected_smoothed, x_values)), total_area
+
     with open(file_name, 'r') as file:
         data = file.readlines()
 
@@ -134,19 +192,27 @@ def process_file(file_name, output_file):
     # Processa cada linha do arquivo
     for line in data:
         columns = line.strip().split()
+
         if len(columns) == 3:
             # Cabeçalho do bloco
             if block:  # Se houver um bloco acumulado, processa
-                corrected_data.append((header, process_block(block)))
+                corrected_data.append((header, process_block(block, theta_values, phi_values)))
+
                 block = []
             header = line.strip()  # Salva o cabeçalho do bloco atual
         elif len(columns) == 2:
             # Adiciona valores ao bloco atual
             block.append([float(columns[0]), int(columns[1])])
 
+        # A cada novo bloco, extraímos os valores de theta e phi a partir do cabeçalho
+        if len(columns) == 3:
+            # Aqui você pode definir os valores de theta e phi
+            theta_values = columns[0]  # Exemplo, ajuste conforme a estrutura do cabeçalho
+            phi_values = columns[1]  # Exemplo, ajuste conforme a estrutura do cabeçalho
+
     # Processa o último bloco
     if block:
-        corrected_data.append((header, process_block(block)))
+        corrected_data.append((header, process_block(block, theta_values, phi_values)))
 
     # Grava os resultados corrigidos no arquivo de saída
     with open(output_file, 'w') as out_file:
@@ -162,71 +228,13 @@ def smooth(data, sigma=1):
     return gaussian_filter1d(data, sigma=sigma)
 
 
-def process_block(block):
-    """
-    Processa um bloco de 18 pontos aplicando o fundo Shirley.
-    """
-
-    def interp_func(x):
-        return np.interp(x, x_values, positive_values)
-
-    # Extrair valores de x e y do bloco
-    y_values = np.array([row[0] for row in block])  # Intensidades
-    x_values = np.array([row[1] for row in block])  # Índices/canais
-
-    # Alisamento inicial nos dados brutos
-    y_smoothed_raw = smooth(y_values, sigma=1)
-
-    # Definir os índices init_back e end_back para o Shirley
-    init_back = 0  # Ajuste conforme seu critério
-    end_back = len(x_values) - 1  # Ajuste conforme seu critério
-
-    # Aplicar o fundo Shirley nos dados brutos (não suavizados inicialmente)
-    shirley_bg = shirley_background(x_values, y_values, init_back, end_back)
-
-    # Corrigir os valores de intensidade (dados brutos menos fundo)
-    y_corrected_raw = y_values - shirley_bg
-
-    # Aplicar o fundo Shirley nos dados suavizados
-    shirley_bg_smoothed = shirley_background(x_values, y_smoothed_raw, init_back, end_back)
-
-    # Corrigir os valores de intensidade suavizados
-    y_corrected_smoothed = y_smoothed_raw - shirley_bg_smoothed
-
-    # Forçar valores positivos (removendo possíveis artefatos negativos)
-    positive_values = y_corrected_smoothed.copy()
-    positive_values[positive_values < 0] = 0
-
-    # Calcula a área apenas para os valores positivos
-    total_area = trapezoid(positive_values, x_values)
-
-    # Imprimir a área total
-    print(f'Área total corrigida: {total_area}')
-
-    plt.figure(figsize=(10, 6))
-    plt.plot(x_values, y_values, label='Original', marker='o')
-    plt.plot(x_values, shirley_bg, label='Fundo Shirley', linestyle='--')
-    plt.plot(x_values, y_corrected_smoothed, label='Corrigido', marker='x')
-
-    # Preencher toda a área abaixo do espectro corrigido com amarelo
-    plt.fill_between(x_values, positive_values, color='yellow', alpha=0.5)
-
-    plt.xlabel('Energia de Ligação (eV)')
-    plt.ylabel('Intensidade')
-    plt.title('Espectro XPS com Fundo Shirley Ajustado e Picos Detectados')
-    plt.legend()
-    plt.grid(True)
-    plt.show()
-    # Retornar os dados corrigidos e a área total
-    return list(zip(y_corrected_smoothed, x_values)), total_area
-
-
 # Arquivos de entrada e saída
 file_name = "saidaxps.txt"
 output_file = "saidashirley.txt"
 
 # Processa o arquivo
 process_file(file_name, output_file)
+
 
 
 def process_file_2(output_file):
@@ -560,9 +568,6 @@ for i, theta in enumerate(theta_values):
     theta_data = data_df[data_df['Theta'] == theta]
     intensity_values[i, :] = theta_data.sort_values(by='Phi')['Intensity'].values
 
-# Grau de simetria (ex.: 4 para C4)
-symmetry = 2
-
 # Aplicar simetrização
 intensity_symmetric = fourier_symmetrization(theta_values, phi_values, intensity_values, symmetry)
 
@@ -573,7 +578,7 @@ for i, theta in enumerate(theta_values):
     data_df.loc[theta_data.index, 'Intensity'] = intensity_symmetric[i, sorted_phi_indices]
 
 # Salvar os resultados em um arquivo de texto no formato desejado
-output_file_path = 'simetrizados.txt'  # Defina o nome do arquivo de saída
+
 save_to_text_file(data_df, intensity_symmetric, output_file_path)
 
 
