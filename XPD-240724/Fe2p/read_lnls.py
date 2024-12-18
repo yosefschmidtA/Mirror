@@ -203,6 +203,20 @@ def process_block(block):
     # Imprimir a área total
     print(f'Área total corrigida: {total_area}')
 
+    plt.figure(figsize=(10, 6))
+    plt.plot(x_values, y_values, label='Original', marker='o')
+    plt.plot(x_values, shirley_bg, label='Fundo Shirley', linestyle='--')
+    plt.plot(x_values, y_corrected_smoothed, label='Corrigido', marker='x')
+
+    # Preencher toda a área abaixo do espectro corrigido com amarelo
+    plt.fill_between(x_values, positive_values, color='yellow', alpha=0.5)
+
+    plt.xlabel('Energia de Ligação (eV)')
+    plt.ylabel('Intensidade')
+    plt.title('Espectro XPS com Fundo Shirley Ajustado e Picos Detectados')
+    plt.legend()
+    plt.grid(True)
+    plt.show()
     # Retornar os dados corrigidos e a área total
     return list(zip(y_corrected_smoothed, x_values)), total_area
 
@@ -296,10 +310,8 @@ def process_and_plot(input_file, output_file, plot_dir="plots", phi_values_to_ev
             plt.grid()
 
             # Salvando o gráfico
-            plot_filename = f"{plot_dir}/fit_theta_{theta:.1f}.png"
-            plt.savefig(plot_filename, dpi=300)
-            plt.close()
-            print(f"Gráfico salvo em: {plot_filename}")
+            plt.show()
+
 
             # Se phi_values_to_evaluate for fornecido, calcule os valores para os pontos de phi fornecidos
             if phi_values_to_evaluate is not None:
@@ -549,7 +561,7 @@ for i, theta in enumerate(theta_values):
     intensity_values[i, :] = theta_data.sort_values(by='Phi')['Intensity'].values
 
 # Grau de simetria (ex.: 4 para C4)
-symmetry = 4
+symmetry = 2
 
 # Aplicar simetrização
 intensity_symmetric = fourier_symmetrization(theta_values, phi_values, intensity_values, symmetry)
@@ -563,7 +575,6 @@ for i, theta in enumerate(theta_values):
 # Salvar os resultados em um arquivo de texto no formato desejado
 output_file_path = 'simetrizados.txt'  # Defina o nome do arquivo de saída
 save_to_text_file(data_df, intensity_symmetric, output_file_path)
-
 
 
 

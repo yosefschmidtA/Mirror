@@ -2,7 +2,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 from scipy.interpolate import griddata
-from scipy.stats import false_discovery_control
+
 
 
 def process_file(file_path):
@@ -86,7 +86,7 @@ def interpolate_data(df, resolution=10000):
     phi_grid, theta_grid = np.meshgrid(phi_grid, theta_grid)
 
     # Realizar a interpolação
-    intensity_grid = griddata((phi, theta), intensity, (phi_grid, theta_grid), method='cubic')
+    intensity_grid = griddata((phi, theta), intensity, (phi_grid, theta_grid), method='linear')
 
     return phi_grid, theta_grid, intensity_grid
 
