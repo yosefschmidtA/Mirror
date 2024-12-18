@@ -5,6 +5,7 @@ import matplotlib.pyplot as plt
 from scipy.integrate import trapezoid
 from scipy.optimize import curve_fit
 from scipy.ndimage import gaussian_filter1d
+import time
 
 
 
@@ -18,7 +19,10 @@ phif = 357
 dphi = 3
 channel = 711.49994
 symmetry = 2
-
+indice_de_plotagem = 1
+shirley_tempo = 1
+poli_tempo = 1
+fft_tempo = 1
 output_file_path = 'simetrizados.txt'  # Defina o nome do arquivo de saída
 # Função para gerar os nomes dos arquivos esperados
 def generate_file_names(prefix, thetai, thetaf, dtheta, phii, phif, dphi):
@@ -177,10 +181,14 @@ def process_file(file_name, output_file):
         plt.title(title)  # Atualiza o título com os valores de theta e phi
         plt.legend()
         plt.grid(True)
-        plt.show()
+        if indice_de_plotagem == 0:
+
+            plt.show()
+            time.sleep(shirley_tempo)
 
         # Retornar os dados corrigidos e a área total
-        return list(zip(y_corrected_smoothed, x_values)), total_area
+        else:
+            return list(zip(y_corrected_smoothed, x_values)), total_area
 
     with open(file_name, 'r') as file:
         data = file.readlines()
@@ -318,6 +326,7 @@ def process_and_plot(input_file, output_file, plot_dir="plots", phi_values_to_ev
             plt.grid()
 
             # Salvando o gráfico
+            time.sleep(poli_tempo)
             plt.show()
 
 
@@ -497,6 +506,7 @@ def fourier_symmetrization(theta_values, phi_values, intensity_values, symmetry)
         plt.xlabel('Phi (°)')
         plt.ylabel('Intensidade')
         plt.legend()
+        time.sleep(fft_tempo)
         plt.show()
 
     return intensity_symmetric
