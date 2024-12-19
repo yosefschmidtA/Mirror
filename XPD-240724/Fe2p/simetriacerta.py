@@ -86,7 +86,7 @@ def interpolate_data(df, resolution=10000):
     phi_grid, theta_grid = np.meshgrid(phi_grid, theta_grid)
 
     # Realizar a interpolação
-    intensity_grid = griddata((phi, theta), intensity, (phi_grid, theta_grid), method='linear')
+    intensity_grid = griddata((phi, theta), intensity, (phi_grid, theta_grid), method='cubic')
 
     return phi_grid, theta_grid, intensity_grid
 

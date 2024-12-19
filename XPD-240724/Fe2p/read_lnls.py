@@ -132,9 +132,6 @@ def process_file(file_name, output_file):
     """
 
     def process_block(block, theta_values, phi_values):
-        """
-        Processa um bloco de 18 pontos aplicando o fundo Shirley.
-        """
 
         # Extrair valores de x e y do bloco
         y_values = np.array([row[0] for row in block])  # Intensidades
@@ -145,7 +142,7 @@ def process_file(file_name, output_file):
 
         # Definir os índices init_back e end_back para o Shirley
         init_back = 0  # Ajuste conforme seu critério
-        end_back = len(x_values) - 1  # Ajuste conforme seu critério
+        end_back = len(x_values) -1  # Ajuste conforme seu critério
 
         # Aplicar o fundo Shirley nos dados brutos (não suavizados inicialmente)
         shirley_bg = shirley_background(x_values, y_smoothed_raw, init_back, end_back)
