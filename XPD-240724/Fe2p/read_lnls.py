@@ -17,10 +17,21 @@ phif = 357
 dphi = 3
 channel = 1123.99988
 symmetry = 2
-indice_de_plotagem = 0
+indice_de_plotagem = 2
 shirley_tempo = 0
-poli_tempo = 0
-fft_tempo = 1
+poli_tempo = 0.5
+fft_tempo = 0.5
+
+
+def gaussian_fit(x, amplitude, mean, stddev):
+    """
+    Retorna os valores de uma gaussiana para os parâmetros dados.
+    amplitude: Altura máxima do pico.
+    mean: Posição do pico.
+    stddev: Largura do pico (desvio padrão).
+    """
+    return amplitude * np.exp(-0.5 * ((x - mean) / stddev) ** 2)
+
 
 
 output_file_path = 'simetrizados.txt'  # Defina o nome do arquivo de saída
@@ -132,7 +143,14 @@ def process_file(file_name, output_file):
     """
 
     def process_block(block, theta_values, phi_values):
+        def doniach_sunjic(x, amp, mean, gamma, beta):
+            # Garantir que o denominador não seja zero
+            denom = (x - mean) ** 2 + gamma ** 2
+            return (amp / np.pi) * (gamma / denom) * (1 + beta * (x - mean) / denom)
 
+        # Função para ajustar duas Doniach-Sunjic
+        def double_doniach(x, amp1, mean1, gamma1, beta1, amp2, mean2, gamma2, beta2):
+            return (doniach_sunjic(x, amp1, mean1, gamma1, beta1) + doniach_sunjic(x, amp2, mean2, gamma2, beta2))
         # Extrair valores de x e y do bloco
         y_values = np.array([row[0] for row in block])  # Intensidades
         x_values = np.array([row[1] for row in block])  # Índices/canais
@@ -142,12 +160,9 @@ def process_file(file_name, output_file):
 
         # Definir os índices init_back e end_back para o Shirley
         init_back = 0  # Ajuste conforme seu critério
-        end_back = len(x_values) -1  # Ajuste conforme seu critério
+        end_back = len(x_values) - 1  # Ajuste conforme seu critério
 
-        # Aplicar o fundo Shirley nos dados brutos (não suavizados inicialmente)
-        shirley_bg = shirley_background(x_values, y_smoothed_raw, init_back, end_back)
-
-        # Aplicar o fundo Shirley nos dados suavizados
+        # Aplicar o fundo Shirley
         shirley_bg_smoothed = shirley_background(x_values, y_smoothed_raw, init_back, end_back)
 
         # Corrigir os valores de intensidade suavizados
@@ -157,20 +172,93 @@ def process_file(file_name, output_file):
         positive_values = y_corrected_smoothed.copy()
         positive_values[positive_values < 0] = 0
 
-        total_area = trapezoid(positive_values, x_values)
+        # Função para a soma de duas gaussianas
+        def double_gaussian(x, amp1, mean1, std1, amp2, mean2, std2):
+            return (gaussian_fit(x, amp1, mean1, std1) +
+                    gaussian_fit(x, amp2, mean2, std2))
 
-        print(f'Área total corrigida: {total_area}')
+        # Estimativas iniciais e intervalos para as duas gaussianas
+        initial_guess = [20000, 10, 5, 5000, 30, 2]  # [amp1, mean1, std1, amp2, mean2, std2]
+        bounds = (
+            [10000, 5, 1, 500, 25, 1],  # Limites inferiores
+            [70000, 15, 10, 20000, 35, 4]  # Limites superiores
+        )
+        initial_guess_doniach = [210000, 15, 1, 0.1,           10000, 31, 1,0.1]
+        # [amp1, mean1, gamma1, beta1, amp2, mean2, gamma2, beta2]
+        bounds_doniach = (
+            [200000, 10, 0.5, 0,            5000, 30, 0.5, 0],  # Limites inferiores
+            [300000, 20, 8, 2,        50000, 32, 4, 2]  # Limites superiores
+        )
+        try:
+            popt_doniach, _ = curve_fit(double_doniach, x_values, positive_values, p0=initial_guess_doniach,bounds=bounds_doniach)
+            # Parâmetros ajustados para cada Doniach-Sunjic
+            amp1, mean1, gamma1, beta1, amp2, mean2, gamma2, beta2 = popt_doniach
+
+            # Gerar as curvas das Doniach-Sunjic individuais
+            doniach1 = doniach_sunjic(x_values, amp1, mean1, gamma1, beta1)
+            doniach2 = doniach_sunjic(x_values, amp2, mean2, gamma2, beta2)
+            fitted_double_doniach = doniach1 + doniach2  # Soma das Doniach-Sunjic
+
+            # Calcular as áreas das duas distribuições Doniach-Sunjic
+            area_doniach1 = amp1 * gamma1 * np.pi  # Área da primeira Doniach-Sunjic
+            area_doniach2 = amp2 * gamma2 * np.pi  # Área da segunda Doniach-Sunjic
+
+        except Exception as e:
+            print(f"Erro no ajuste das Doniach-Sunjic: {e}")
+            doniach1 = doniach2 = fitted_double_doniach = np.zeros_like(x_values)
+        # Ajustar os dados usando curve_fit
+        try:
+            popt, _ = curve_fit(double_gaussian, x_values, positive_values, p0=initial_guess, bounds=bounds)
+            # Parâmetros ajustados para cada gaussiana
+            amp1, mean1, std1, amp2, mean2, std2 = popt
+
+            # Gerar as curvas das gaussianas individuais
+            gaussian1 = gaussian_fit(x_values, amp1, mean1, std1)
+            gaussian2 = gaussian_fit(x_values, amp2, mean2, std2)
+            fitted_double_gaussian = gaussian1 + gaussian2  # Soma das gaussianas
+
+            area_gaussian1 = amp1 * std1 * np.sqrt(2 * np.pi)
+            area_gaussian2 = amp2 * std2 * np.sqrt(2 * np.pi)
+
+        except Exception as e:
+            print(f"Erro no ajuste das gaussianas: {e}")
+            gaussian1 = gaussian2 = fitted_double_gaussian = np.zeros_like(x_values)
+
+        # Calcular a área total
+        total_area = trapezoid(positive_values, x_values)
+        print("Area: ", total_area)
+        # Plotagem
         if indice_de_plotagem == 1:
             title = f"Espectro XPS com Fundo Shirley Ajustado (θ={theta_values}, φ={phi_values})"
             plt.figure(figsize=(10, 6))
             plt.plot(x_values, y_smoothed_raw, label='Original', marker='o')
-            plt.plot(x_values, shirley_bg, label='Fundo Shirley', linestyle='--')
+            plt.plot(x_values, shirley_bg_smoothed, label='Fundo Shirley', linestyle='--')
             plt.plot(x_values, y_corrected_smoothed, label='Corrigido', marker='x')
-            # Preencher toda a área abaixo do espectro corrigido com amarelo
-            plt.fill_between(x_values, positive_values, color='yellow', alpha=0.5)
+            plt.plot(x_values, doniach1, label='Doniach 1', linestyle='-.', color='blue')
+            plt.plot(x_values, doniach2, label='Doniach 2', linestyle=':', color='green')
+            plt.plot(x_values, fitted_double_doniach, label='Soma das Doniach-Sunjic', color='red')
+            plt.fill_between(x_values, positive_values, color='yellow', alpha=0.5, label='Área Corrigida')
             plt.xlabel('Energia de Ligação (eV)')
             plt.ylabel('Intensidade')
-            plt.title(title)  # Atualiza o título com os valores de theta e phi
+            plt.title(title)
+            plt.legend()
+            plt.grid(True)
+            plt.show()
+            time.sleep(shirley_tempo)
+
+        if indice_de_plotagem == 2:
+            title = f"Espectro XPS com Fundo Shirley Ajustado (θ={theta_values}, φ={phi_values})"
+            plt.figure(figsize=(10, 6))
+            plt.plot(x_values, y_smoothed_raw, label='Original', marker='o')
+            plt.plot(x_values, shirley_bg_smoothed, label='Fundo Shirley', linestyle='--')
+            plt.plot(x_values, y_corrected_smoothed, label='Corrigido', marker='x')
+            plt.plot(x_values, gaussian1, label='Gaussiana 1', linestyle='-.', color='blue')
+            plt.plot(x_values, gaussian2, label='Gaussiana 2', linestyle=':', color='green')
+            plt.plot(x_values, fitted_double_gaussian, label='Soma das Gaussianas', color='red')
+            plt.fill_between(x_values, positive_values, color='yellow', alpha=0.5, label='Área Corrigida')
+            plt.xlabel('Energia de Ligação (eV)')
+            plt.ylabel('Intensidade')
+            plt.title(title)
             plt.legend()
             plt.grid(True)
             plt.show()
@@ -193,30 +281,25 @@ def process_file(file_name, output_file):
             # Cabeçalho do bloco
             if block:  # Se houver um bloco acumulado, processa
                 corrected_data.append((header, process_block(block, theta_values, phi_values)))
-
                 block = []
             header = line.strip()  # Salva o cabeçalho do bloco atual
         elif len(columns) == 2:
             # Adiciona valores ao bloco atual
             block.append([float(columns[0]), int(columns[1])])
 
-        # A cada novo bloco, extraímos os valores de theta e phi a partir do cabeçalho
         if len(columns) == 3:
-            # Aqui você pode definir os valores de theta e phi
-            theta_values = columns[0]  # Exemplo, ajuste conforme a estrutura do cabeçalho
-            phi_values = columns[1]  # Exemplo, ajuste conforme a estrutura do cabeçalho
+            theta_values = columns[0]  # Ajuste conforme necessário
+            phi_values = columns[1]   # Ajuste conforme necessário
 
-    # Processa o último bloco
     if block:
         corrected_data.append((header, process_block(block, theta_values, phi_values)))
 
     # Grava os resultados corrigidos no arquivo de saída
     with open(output_file, 'w') as out_file:
         for header, block_data in corrected_data:
-            # Agora, extraímos a área total do segundo valor retornado por process_block
             _, total_area = block_data
             out_file.write(f"{header} {total_area:.1f}\n")
-            for y_corr, x in block_data[0]:  # Escreve os dados corrigidos
+            for y_corr, x in block_data[0]:
                 out_file.write(f"{y_corr:.2f} {x}\n")
 
 
@@ -230,7 +313,6 @@ output_file = "saidashirley.txt"
 
 # Processa o arquivo
 process_file(file_name, output_file)
-
 
 
 def process_file_2(output_file):
