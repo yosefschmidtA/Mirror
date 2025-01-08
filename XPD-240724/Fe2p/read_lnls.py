@@ -200,90 +200,60 @@ def process_file(file_name, output_file):
 
     def process_block(block, theta_values, phi_values):
         def doniach_sunjic(x, amp, mean, gamma, beta):
-            # Garantir que o denominador não seja zero
             denom = (x - mean) ** 2 + gamma ** 2
             return (amp / np.pi) * (gamma / denom) * (1 + beta * (x - mean) / denom)
 
-        # Função para ajustar duas Doniach-Sunjic
         def double_doniach(x, amp1, mean1, gamma1, beta1, amp2, mean2, gamma2, beta2):
             return (doniach_sunjic(x, amp1, mean1, gamma1, beta1) + doniach_sunjic(x, amp2, mean2, gamma2, beta2))
-        # Extrair valores de x e y do bloco
+
         y_values = np.array([row[0] for row in block])  # Intensidades
         x_values = np.array([row[1] for row in block])  # Índices/canais
 
-        # Alisamento inicial nos dados brutos
         y_smoothed_raw = smooth(y_values, sigma=1.5)
+        init_back = 1
+        end_back = len(x_values) - 1
 
-        # Definir os índices init_back e end_back para o Shirley
-        init_back = 1  # Ajuste conforme seu critério
-        end_back = len(x_values) - 1   # Ajuste conforme seu critério
-
-        # Aplicar o fundo Shirley
         shirley_bg_smoothed = shirley_background(x_values, y_smoothed_raw, init_back, end_back)
-
-        # Corrigir os valores de intensidade suavizados
         y_corrected_smoothed = y_smoothed_raw - shirley_bg_smoothed
-
-        # Forçar valores positivos (removendo possíveis artefatos negativos)
         positive_values = y_corrected_smoothed.copy()
         positive_values[positive_values < 0] = 0
 
-        # Função para a soma de duas gaussianas
-        def double_gaussian(x, amp1, mean1, std1, amp2, mean2, std2):
-            return (gaussian_fit(x, amp1, mean1, std1) +
-                    gaussian_fit(x, amp2, mean2, std2))
+        fitted_double_doniach = fitted_double_gaussian = np.zeros_like(x_values)
 
-        # Estimativas iniciais e intervalos para as duas gaussianas
-        initial_guess = [20000, 10, 5, 5000, 30, 2]  # [amp1, mean1, std1, amp2, mean2, std2]
-        bounds = (
-            [10000, 5, 1, 500, 25, 1],  # Limites inferiores
-            [70000, 15, 10, 20000, 35, 4]  # Limites superiores
-        )
-        initial_guess_doniach = [210000, 15, 1, 0.1,           10000, 31, 1,0.1]
-        # [amp1, mean1, gamma1, beta1, amp2, mean2, gamma2, beta2]
-        bounds_doniach = (
-            [200000, 10, 0.5, 0,            5000, 30, 0.5, 0],  # Limites inferiores
-            [300000, 20, 8, 2,        50000, 32, 4, 2]  # Limites superiores
-        )
-        try:
-            popt_doniach, _ = curve_fit(double_doniach, x_values, positive_values, p0=initial_guess_doniach,bounds=bounds_doniach)
-            # Parâmetros ajustados para cada Doniach-Sunjic
-            amp1, mean1, gamma1, beta1, amp2, mean2, gamma2, beta2 = popt_doniach
+        # Ajuste Doniach-Sunjic apenas se indice_de_plotagem == 1
+        if indice_de_plotagem == 1:
+            initial_guess_doniach = [210000, 15, 1, 0.1, 10000, 31, 1, 0.1]
+            bounds_doniach = ([200000, 10, 0.5, 0, 5000, 30, 0.5, 0], [300000, 20, 8, 2, 50000, 32, 4, 2])
+            try:
+                popt_doniach, _ = curve_fit(double_doniach, x_values, positive_values, p0=initial_guess_doniach,
+                                            bounds=bounds_doniach)
+                amp1, mean1, gamma1, beta1, amp2, mean2, gamma2, beta2 = popt_doniach
+                doniach1 = doniach_sunjic(x_values, amp1, mean1, gamma1, beta1)
+                doniach2 = doniach_sunjic(x_values, amp2, mean2, gamma2, beta2)
+                fitted_double_doniach = doniach1 + doniach2
+            except Exception as e:
+                print(f"Erro no ajuste das Doniach-Sunjic: {e}")
 
-            # Gerar as curvas das Doniach-Sunjic individuais
-            doniach1 = doniach_sunjic(x_values, amp1, mean1, gamma1, beta1)
-            doniach2 = doniach_sunjic(x_values, amp2, mean2, gamma2, beta2)
-            fitted_double_doniach = doniach1 + doniach2  # Soma das Doniach-Sunjic
+        # Ajuste Gaussianas apenas se indice_de_plotagem == 2
+        if indice_de_plotagem == 2:
+            def double_gaussian(x, amp1, mean1, std1, amp2, mean2, std2):
+                return (gaussian_fit(x, amp1, mean1, std1) + gaussian_fit(x, amp2, mean2, std2))
 
-            # Calcular as áreas das duas distribuições Doniach-Sunjic
-            area_doniach1 = amp1 * gamma1 * np.pi  # Área da primeira Doniach-Sunjic
-            area_doniach2 = amp2 * gamma2 * np.pi  # Área da segunda Doniach-Sunjic
+            initial_guess = [20000, 10, 5, 5000, 30, 2]
+            bounds = ([10000, 5, 1, 500, 25, 1], [70000, 15, 10, 20000, 35, 4])
+            try:
+                popt, _ = curve_fit(double_gaussian, x_values, positive_values, p0=initial_guess, bounds=bounds)
+                amp1, mean1, std1, amp2, mean2, std2 = popt
+                gaussian1 = gaussian_fit(x_values, amp1, mean1, std1)
+                gaussian2 = gaussian_fit(x_values, amp2, mean2, std2)
+                fitted_double_gaussian = gaussian1 + gaussian2
+            except Exception as e:
+                print(f"Erro no ajuste das gaussianas: {e}")
 
-        except Exception as e:
-            print(f"Erro no ajuste das Doniach-Sunjic: {e}")
-            doniach1 = doniach2 = fitted_double_doniach = np.zeros_like(x_values)
-        # Ajustar os dados usando curve_fit
-        try:
-            popt, _ = curve_fit(double_gaussian, x_values, positive_values, p0=initial_guess, bounds=bounds)
-            # Parâmetros ajustados para cada gaussiana
-            amp1, mean1, std1, amp2, mean2, std2 = popt
-
-            # Gerar as curvas das gaussianas individuais
-            gaussian1 = gaussian_fit(x_values, amp1, mean1, std1)
-            gaussian2 = gaussian_fit(x_values, amp2, mean2, std2)
-            fitted_double_gaussian = gaussian1 + gaussian2  # Soma das gaussianas
-
-            area_gaussian1 = amp1 * std1 * np.sqrt(2 * np.pi)
-            area_gaussian2 = amp2 * std2 * np.sqrt(2 * np.pi)
-
-        except Exception as e:
-            print(f"Erro no ajuste das gaussianas: {e}")
-            gaussian1 = gaussian2 = fitted_double_gaussian = np.zeros_like(x_values)
-
-        # Calcular a área total
         total_area = trapezoid(positive_values, x_values)
         print("Area: ", total_area)
-        # Plotagem
+
+        # Plotagem - Mantendo a estrutura original
         if indice_de_plotagem == 1:
             title = f"Espectro XPS com Fundo Shirley Ajustado (θ={theta_values}, φ={phi_values})"
             plt.figure(figsize=(10, 6))
@@ -311,6 +281,21 @@ def process_file(file_name, output_file):
             plt.plot(x_values, gaussian1, label='Gaussiana 1', linestyle='-.', color='blue')
             plt.plot(x_values, gaussian2, label='Gaussiana 2', linestyle=':', color='green')
             plt.plot(x_values, fitted_double_gaussian, label='Soma das Gaussianas', color='red')
+            plt.fill_between(x_values, positive_values, color='yellow', alpha=0.5, label='Área Corrigida')
+            plt.xlabel('Energia de Ligação (eV)')
+            plt.ylabel('Intensidade')
+            plt.title(title)
+            plt.legend()
+            plt.grid(True)
+            plt.show()
+            time.sleep(shirley_tempo)
+
+        if indice_de_plotagem == 0:
+            title = f"Espectro XPS com Fundo Shirley Ajustado (θ={theta_values}, φ={phi_values})"
+            plt.figure(figsize=(10, 6))
+            plt.plot(x_values, y_smoothed_raw, label='Original', marker='o')
+            plt.plot(x_values, shirley_bg_smoothed, label='Fundo Shirley', linestyle='--')
+            plt.plot(x_values, y_corrected_smoothed, label='Corrigido', marker='x')
             plt.fill_between(x_values, positive_values, color='yellow', alpha=0.5, label='Área Corrigida')
             plt.xlabel('Energia de Ligação (eV)')
             plt.ylabel('Intensidade')
