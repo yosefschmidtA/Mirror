@@ -1,28 +1,55 @@
-import os
-import numpy as np
-import pandas as pd
-import matplotlib.pyplot as plt
-from scipy.integrate import trapezoid
-from scipy.optimize import curve_fit
-from scipy.ndimage import gaussian_filter1d
-import time
+def fourier_symmetrization(theta_values, phi_values, intensity_values, symmetry):
+    """
+    Aplica a simetrização por expansão em Fourier nos dados XPD.
 
-# Parâmetros fornecidos
-file_prefix = 'JL24_-'
-thetai = 12
-thetaf = 69
-dtheta = 3
-phii = 0
-phif = 357
-dphi = 3
-channel = 1123.99988
-symmetry = 2
-indice_de_plotagem = 2
-shirley_tempo = 0
-poli_tempo = 0.5
-fft_tempo = 0.5
+    Parameters:
+        theta_values (array): Valores de theta.
+        phi_values (array): Valores de phi.
+        intensity_values (2D array): Intensidades organizadas como [theta][phi].
+        symmetry (int): Grau de simetria (ex.: 4 para C4).
 
+    Returns:
+        intensity_symmetric (2D array): Intensidades simetrizadas.
+    """
+    n_theta = len(theta_values)
+    n_phi = len(phi_values)
 
+    # Inicializar array para intensidades simetrizadas
+    intensity_symmetric = np.zeros_like(intensity_values)
+
+    for i, theta in enumerate(theta_values):
+        # Extrair a curva de intensidade para o theta atual
+        f = intensity_values[i, :]
+
+        # Calcular a Transformada de Fourier
+        F = np.fft.fft(f)
+
+        # Criar uma cópia para armazenar apenas os componentes simétricos
+        F_symmetric = np.zeros_like(F, dtype=complex)
+
+        # Manter apenas os harmônicos que atendem à simetria (ex.: múltiplos de symmetry)
+        for u in range(0, n_phi):
+            if u % symmetry == 0:
+                F_symmetric[u] = F[u]
+
+        # Calcular a Transformada Inversa de Fourier com os componentes simétricos
+        f_symmetric = np.fft.ifft(F_symmetric).real
+
+        # Salvar a curva simetrizada
+        intensity_symmetric[i, :] = f_symmetric
+
+        # Plotar as curvas original e simetrizada (opcional)
+        plt.figure()
+        plt.plot(phi_values, f, label='Original', linestyle='--')
+        plt.plot(phi_values, f_symmetric, label=f'Simetrizado (C{symmetry})')
+        plt.title(f'Theta = {theta:.2f}')
+        plt.xlabel('Phi (°)')
+        plt.ylabel('Intensidade')
+        plt.legend()
+        time.sleep(fft_tempo)
+        plt.show()
+
+    return intensity_symmetric
 def gaussian_fit(x, amplitude, mean, stddev):
     """
     Retorna os valores de uma gaussiana para os parâmetros dados.
@@ -31,11 +58,6 @@ def gaussian_fit(x, amplitude, mean, stddev):
     stddev: Largura do pico (desvio padrão).
     """
     return amplitude * np.exp(-0.5 * ((x - mean) / stddev) ** 2)
-
-
-
-output_file_path = 'simetrizados.txt'  # Defina o nome do arquivo de saída
-# Função para gerar os nomes dos arquivos esperados
 def generate_file_names(prefix, thetai, thetaf, dtheta, phii, phif, dphi):
     theta_values = [thetai + i * dtheta for i in range((thetaf - thetai) // dtheta + 1)]
     phi_values = [phii + j * dphi for j in range((phif - phii) // dphi + 1)]
@@ -45,53 +67,6 @@ def generate_file_names(prefix, thetai, thetaf, dtheta, phii, phif, dphi):
             file_name = f"{prefix}{theta}.{phi}"
             file_names.append(file_name)
     return file_names
-
-
-
-# Gerar os nomes de arquivos esperados
-expected_files = generate_file_names(file_prefix, thetai, thetaf, dtheta, phii, phif, dphi)
-
-# Verificar quais arquivos existem no diretório atual
-existing_files = [f for f in expected_files if os.path.isfile(f)]
-
-# Listas para armazenar os dados separados
-data_one_column = []
-output_file_xps = "saidaxps.txt"
-with open(output_file_xps, 'w') as log_file:
-
-    for file in existing_files:
-
-        try:
-            # Assumindo que o formato do arquivo é 'prefixo_theta.phi'
-            theta, phi = file[len(file_prefix):].split('.')
-            theta = int(theta)
-            phi = int(phi)
-        except ValueError:
-            continue  # Caso o nome do arquivo não tenha o formato esperado
-
-        with open(file, 'r') as f:
-            data_valid = False  # Flag para verificar se estamos no conjunto com 18 na sexta coluna
-            contador_banda = 0
-            for line in f:
-                # Remove espaços e divide por colunas
-                columns = line.strip().split()
-
-                if len(columns) == 7:  # Linha com 7 colunas (cabeçalho)
-                    # Verifique se a sexta coluna tem o valor 18
-                    if float(columns[0]) == channel:  # Coluna 6 (índice 5)
-                        data_valid = True  # Ativa o flag para processar os dados subsequentes
-
-                        log_file.write(f"\n{theta} {phi} {channel}\n")
-
-                # Se estivermos no conjunto válido, processa os dados
-                elif data_valid and len(columns) == 1:  # Linha com 1 coluna
-                    value = float(columns[0])
-                    contador_banda += 1
-                    data_one_column.append(value)
-
-                    log_file.write(f"{value} {contador_banda}\n")
-
-
 def shirley_background(x_data, y_data, init_back, end_back, n_iterations=20):
     """
     Calcula o fundo de Shirley para um espectro de intensidade.
@@ -135,6 +110,87 @@ def shirley_background(x_data, y_data, init_back, end_back, n_iterations=20):
         background0 = background.copy()
 
     return background
+def smooth(data, sigma=1.5):
+    return gaussian_filter1d(data, sigma=sigma)
+# Função para o polinômio de grau 3
+def polynomial_3(x, a, b, c, d):
+    return a * x ** 3 + b * x ** 2 + c * x + d
+
+
+from scipy.interpolate import griddata
+import os
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+from scipy.integrate import trapezoid
+from scipy.optimize import curve_fit
+from scipy.ndimage import gaussian_filter1d
+import time
+
+# Parâmetros fornecidos
+file_prefix = 'JL24_-'
+thetai = 12
+thetaf = 69
+dtheta = 3
+phii = 0
+phif = 357
+dphi = 3
+channel = 1123.99988
+symmetry = 2
+indice_de_plotagem = 0
+shirley_tempo = 0
+poli_tempo = 0.5
+fft_tempo = 0.5
+
+
+
+output_file_path = 'simetrizados.txt'  # Defina o nome do arquivo de saída
+# Função para gerar os nomes dos arquivos esperados
+
+# Gerar os nomes de arquivos esperados
+expected_files = generate_file_names(file_prefix, thetai, thetaf, dtheta, phii, phif, dphi)
+
+# Verificar quais arquivos existem no diretório atual
+existing_files = [f for f in expected_files if os.path.isfile(f)]
+
+# Listas para armazenar os dados separados
+data_one_column = []
+output_file_xps = "saidaxps.txt"
+
+with open(output_file_xps, 'w') as log_file:
+    for file in existing_files:
+
+        try:
+            # Assumindo que o formato do arquivo é 'prefixo_theta.phi'
+            theta, phi = file[len(file_prefix):].split('.')
+            theta = int(theta)
+            phi = int(phi)
+        except ValueError:
+            continue  # Caso o nome do arquivo não tenha o formato esperado
+
+        with open(file, 'r') as f:
+            data_valid = False  # Flag para verificar se estamos no conjunto com o canal escolhido
+            contador_banda = 0
+            data_one_column = []
+
+            for line in f:
+                # Remove espaços e divide por colunas
+                columns = line.strip().split()
+
+                if len(columns) == 7:  # Linha com 7 colunas (cabeçalho)
+                    if data_valid:
+                        break  # Encerra a coleta ao encontrar um novo cabeçalho
+
+                    # Verifique se a primeira coluna tem o valor do canal desejado
+                    if float(columns[0]) == channel:
+                        data_valid = True  # Ativa o flag para processar os dados subsequentes
+                        log_file.write(f"\n{theta} {phi} {channel}\n")
+
+                elif data_valid and len(columns) == 1:  # Linha com 1 coluna
+                    value = float(columns[0])
+                    contador_banda += 1
+                    data_one_column.append(value)
+                    log_file.write(f"{value} {contador_banda}\n")
 
 
 def process_file(file_name, output_file):
@@ -156,11 +212,11 @@ def process_file(file_name, output_file):
         x_values = np.array([row[1] for row in block])  # Índices/canais
 
         # Alisamento inicial nos dados brutos
-        y_smoothed_raw = smooth(y_values, sigma=1)
+        y_smoothed_raw = smooth(y_values, sigma=1.5)
 
         # Definir os índices init_back e end_back para o Shirley
-        init_back = 0  # Ajuste conforme seu critério
-        end_back = len(x_values) - 1  # Ajuste conforme seu critério
+        init_back = 1  # Ajuste conforme seu critério
+        end_back = len(x_values) - 1   # Ajuste conforme seu critério
 
         # Aplicar o fundo Shirley
         shirley_bg_smoothed = shirley_background(x_values, y_smoothed_raw, init_back, end_back)
@@ -303,9 +359,6 @@ def process_file(file_name, output_file):
                 out_file.write(f"{y_corr:.2f} {x}\n")
 
 
-def smooth(data, sigma=1):
-    return gaussian_filter1d(data, sigma=sigma)
-
 
 # Arquivos de entrada e saída
 file_name = "saidaxps.txt"
@@ -314,6 +367,7 @@ output_file = "saidashirley.txt"
 # Processa o arquivo
 process_file(file_name, output_file)
 
+#process_file_2 lê o arquivo saidashirley.txt que está com os dados após a subtração do fundo shirley e salva no dataframe "df"
 
 def process_file_2(output_file):
     """
@@ -349,15 +403,11 @@ df = process_file_2("saidashirley.txt")
 
 # Salva o DataFrame em um arquivo .txt
 output_txt_file = "saidatpintensity.txt"
+
 with open(output_txt_file, 'w') as f:
     f.write(df.to_string(index=False))  # Salva os dados sem o índice
 
 print(f"Dados salvos em {output_txt_file}")
-
-
-# Função para o polinômio de grau 3
-def polynomial_3(x, a, b, c, d):
-    return a * x ** 3 + b * x ** 2 + c * x + d
 
 
 def process_and_plot(input_file, output_file, plot_dir="plots", phi_values_to_evaluate=None):
@@ -493,10 +543,11 @@ os.makedirs(plot_dir, exist_ok=True)
 
 phi_values = np.arange(phii, phii + dphi, dphi)
 
+
 # Executa o processamento e plotagem
 process_and_plot(input_file, output_file, plot_dir, phi_values)
 
-
+#Essa função vai ler o arquivo para a realizar a simetrização
 def process_file(file_path):
     with open(file_path, 'r') as file:
         lines = file.readlines()
@@ -526,61 +577,6 @@ def process_file(file_path):
     print("Valores de Theta lidos:", df['Theta'].unique())
 
     return df
-
-
-def fourier_symmetrization(theta_values, phi_values, intensity_values, symmetry):
-    """
-    Aplica a simetrização por expansão em Fourier nos dados XPD.
-
-    Parameters:
-        theta_values (array): Valores de theta.
-        phi_values (array): Valores de phi.
-        intensity_values (2D array): Intensidades organizadas como [theta][phi].
-        symmetry (int): Grau de simetria (ex.: 4 para C4).
-
-    Returns:
-        intensity_symmetric (2D array): Intensidades simetrizadas.
-    """
-    n_theta = len(theta_values)
-    n_phi = len(phi_values)
-
-    # Inicializar array para intensidades simetrizadas
-    intensity_symmetric = np.zeros_like(intensity_values)
-
-    for i, theta in enumerate(theta_values):
-        # Extrair a curva de intensidade para o theta atual
-        f = intensity_values[i, :]
-
-        # Calcular a Transformada de Fourier
-        F = np.fft.fft(f)
-
-        # Criar uma cópia para armazenar apenas os componentes simétricos
-        F_symmetric = np.zeros_like(F, dtype=complex)
-
-        # Manter apenas os harmônicos que atendem à simetria (ex.: múltiplos de symmetry)
-        for u in range(0, n_phi):
-            if u % symmetry == 0:
-                F_symmetric[u] = F[u]
-
-        # Calcular a Transformada Inversa de Fourier com os componentes simétricos
-        f_symmetric = np.fft.ifft(F_symmetric).real
-
-        # Salvar a curva simetrizada
-        intensity_symmetric[i, :] = f_symmetric
-
-        # Plotar as curvas original e simetrizada (opcional)
-        plt.figure()
-        plt.plot(phi_values, f, label='Original', linestyle='--')
-        plt.plot(phi_values, f_symmetric, label=f'Simetrizado (C{symmetry})')
-        plt.title(f'Theta = {theta:.2f}')
-        plt.xlabel('Phi (°)')
-        plt.ylabel('Intensidade')
-        plt.legend()
-        time.sleep(fft_tempo)
-        plt.show()
-
-    return intensity_symmetric
-
 
 def save_to_text_file(data_df, intensity_symmetric, output_file_path):
     """
@@ -661,14 +657,6 @@ for i, theta in enumerate(theta_values):
 
 save_to_text_file(data_df, intensity_symmetric, output_file_path)
 
-
-import matplotlib.pyplot as plt
-import numpy as np
-import pandas as pd
-from scipy.interpolate import griddata
-
-
-
 def process_file(file_path):
     with open(file_path, 'r') as file:
         lines = file.readlines()
@@ -700,7 +688,7 @@ def process_file(file_path):
 
     if phi_interval < 360 and df['Phi'].max() < 360:
         # Encontrar os pontos com Phi = 0 e duplicar como Phi = 360
-        df_360 = df[df['Phi'] == 180].copy()
+        df_360 = df[df['Phi'] == 0].copy()
         df_360['Phi'] = 360
         df = pd.concat([df, df_360], ignore_index=True)
 
@@ -736,7 +724,7 @@ def process_file(file_path):
 
 
 # Função para interpolar os dados
-def interpolate_data(df, resolution=10000):
+def interpolate_data(df, resolution=1000):
     # Definir uma grade regular para a interpolação
     phi = np.radians(df['Phi'])
     theta = np.radians(df['Theta'])
@@ -750,7 +738,7 @@ def interpolate_data(df, resolution=10000):
     phi_grid, theta_grid = np.meshgrid(phi_grid, theta_grid)
 
     # Realizar a interpolação
-    intensity_grid = griddata((phi, theta), intensity, (phi_grid, theta_grid), method='cubic')
+    intensity_grid = griddata((phi, theta), intensity, (phi_grid, theta_grid), method='linear')
 
     return phi_grid, theta_grid, intensity_grid
 
@@ -786,6 +774,7 @@ def plot_polar_interpolated(df, resolution=500):
     fig.colorbar(c, ax=ax, label='Intensidade')
 
     plt.show()
+
 def rotate_phi(df, rotation_angle):
     """
     Rotaciona os valores de Phi no DataFrame.
@@ -807,17 +796,18 @@ file_path = 'simetrizados.txt'
 
 def save_to_txt_with_blocks(df, file_name):
     """
-    Salva os dados organizados em blocos, onde cada bloco corresponde a um valor de θ (Theta).
+    Salva os dados organizados em blocos, onde cada bloco corresponde a um valor de θ (Theta),
+    removendo o valor de Phi = 360 caso sua intensidade seja igual à do primeiro valor de Phi do bloco.
     """
     # Filtrar apenas os dados originais
     df_original = df[df['IsOriginal']]
 
-    num_theta = df_original['Theta'].nunique()  # Número de ângulos theta únicos
-    num_phi = df_original['Phi'].nunique()  # Número de ângulos phi únicos
-    num_points = len(df_original)  # Total de pontos
+    num_theta = df_original['Theta'].nunique()
+    num_phi = df_original['Phi'].nunique()
+    num_points = len(df_original)
 
     with open(file_name, 'w') as file:
-        # Cabeçalho inicial que aparece uma vez no arquivo
+        # Cabeçalho inicial
         file.write(f"      {num_theta}    {num_points}    0     datakind beginning-row linenumbers\n")
         file.write(f"MSCD Version 1.00 Yufeng Chen and Michel A Van Hove\n")
         file.write(f"Lawrence Berkeley National Laboratory (LBNL), Berkeley, CA 94720\n")
@@ -825,33 +815,33 @@ def save_to_txt_with_blocks(df, file_name):
         file.write(f"--------------------------------------------------------------\n")
         file.write(f"angle-resolved photoemission extended fine structure (ARPEFS)\n")
         file.write(f"experimental data for Fe 2p3/2 from Fe on STO(100)  excited with hv=1810eV\n")
+        file.write("\n")
         file.write(f"provided by Pancotti et al. (LNLS in 9, June 2010)\n")
         file.write(f"   initial angular momentum (l) = 1\n")
         file.write(f"   photon polarization angle (polar, azimuth) = (  30.0,   0.0 ) (deg)\n")
         file.write(f"   sample temperature = 300 K\n")
+        file.write("\n")
         file.write(f"   photoemission angular scan curves\n")
-        file.write(f"     (curve point theta phi weightc weighte//k intensity chiexp)\n")  # Cabeçalho dinâmico
+        file.write(f"     (curve point theta phi weightc weighte//k intensity chiexp)\n")
         file.write(f"      {num_theta}     {num_points}       1       {num_theta}     {num_phi}     {num_points}\n")
 
         # Número do bloco de θ
         number_of_theta = 0
 
-        # Loop para os diferentes valores de θ
         for theta in sorted(df_original['Theta'].unique()):
-            # Cabeçalho dinâmico do bloco de θ
             number_of_theta += 1
-            first_row = df_original[df_original['Theta'] == theta].iloc[0]
+            subset = df_original[df_original['Theta'] == theta].sort_values(by='Phi')
+            first_intensity = subset.iloc[0]['Intensity']
+            last_intensity = subset.iloc[-1]['Intensity']
             file.write(
                 f"       {number_of_theta}     {num_phi}       19.5900     {theta:.4f}      1.00000      0.00000\n")
 
-            # Dados para o θ atual
-            subset = df_original[df_original['Theta'] == theta]
-            for _, row in subset.iterrows():
-                file.write(
-                    f"      {row['Phi']:.4f}      {row['Col1']:.2f}      {row['Col2']:.2f}      {row['Intensity']:.7f}\n")
+            for i, row in enumerate(subset.itertuples(index=False)):
+                if not (i == len(subset) - 1 and row.Intensity == first_intensity):
+                    file.write(
+                        f"      {row.Phi:.4f}      {row.Col1:.2f}      {row.Col2:.2f}      {row.Intensity:.7f}\n")
 
-            # Linha em branco para separar os blocos
-            file.write("")
+            file.write("\n")  # Linha em branco para separar os blocos
 
 
 # Processar os dados

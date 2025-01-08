@@ -4,7 +4,19 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="ea7fdd2e-a8d5-403e-bfac-032ea3b0a74e" name="Changes" comment="" />
+    <list default="true" id="ea7fdd2e-a8d5-403e-bfac-032ea3b0a74e" name="Changes" comment="">
+      <change beforePath="$PROJECT_DIR$/.idea/Mirror.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/Mirror.iml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/XPD-240724/Fe2p/coeficientes_ajustados.txt" beforeDir="false" afterPath="$PROJECT_DIR$/XPD-240724/Fe2p/coeficientes_ajustados.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/XPD-240724/Fe2p/read_lnls.py" beforeDir="false" afterPath="$PROJECT_DIR$/XPD-240724/Fe2p/read_lnls.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/XPD-240724/Fe2p/saidashirley.txt" beforeDir="false" afterPath="$PROJECT_DIR$/XPD-240724/Fe2p/saidashirley.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/XPD-240724/Fe2p/saidatpintensity.txt" beforeDir="false" afterPath="$PROJECT_DIR$/XPD-240724/Fe2p/saidatpintensity.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/XPD-240724/Fe2p/saidaxps.txt" beforeDir="false" afterPath="$PROJECT_DIR$/XPD-240724/Fe2p/saidaxps.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/XPD-240724/Fe2p/simetrizados.txt" beforeDir="false" afterPath="$PROJECT_DIR$/XPD-240724/Fe2p/simetrizados.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/XPD-240724/Fe2p/teste.txt" beforeDir="false" afterPath="$PROJECT_DIR$/XPD-240724/Fe2p/teste.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/plotsimetria.py" beforeDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -29,34 +41,34 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "Python.90symmetry.executor": "Run",
-    "Python.Reflexaosegunda.executor": "Run",
-    "Python.Simetriam.executor": "Run",
-    "Python.Simetrias.executor": "Run",
-    "Python.Simetrias180.executor": "Run",
-    "Python.Simetrias90.executor": "Run",
-    "Python.calculo_intensity.executor": "Run",
-    "Python.main.executor": "Run",
-    "Python.plotsimetria.executor": "Run",
-    "Python.read_lnls.executor": "Run",
-    "Python.simetriacerta.executor": "Run",
-    "Python.soma.executor": "Run",
-    "Python.testedoniach.executor": "Run",
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "RunOnceActivity.git.unshallow": "true",
-    "git-widget-placeholder": "master",
-    "last_opened_file_path": "/home/yosef/PycharmProjects/Mirror/XPD-240724/Fe2p",
-    "node.js.detected.package.eslint": "true",
-    "node.js.detected.package.tslint": "true",
-    "node.js.selected.package.eslint": "(autodetect)",
-    "node.js.selected.package.tslint": "(autodetect)",
-    "nodejs_package_manager_path": "npm",
-    "settings.editor.selected.configurable": "preferences.lookFeel",
-    "vue.rearranger.settings.migration": "true"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;Python.90symmetry.executor&quot;: &quot;Run&quot;,
+    &quot;Python.Reflexaosegunda.executor&quot;: &quot;Run&quot;,
+    &quot;Python.Simetriam.executor&quot;: &quot;Run&quot;,
+    &quot;Python.Simetrias.executor&quot;: &quot;Run&quot;,
+    &quot;Python.Simetrias180.executor&quot;: &quot;Run&quot;,
+    &quot;Python.Simetrias90.executor&quot;: &quot;Run&quot;,
+    &quot;Python.calculo_intensity.executor&quot;: &quot;Run&quot;,
+    &quot;Python.main.executor&quot;: &quot;Run&quot;,
+    &quot;Python.plotsimetria.executor&quot;: &quot;Run&quot;,
+    &quot;Python.read_lnls.executor&quot;: &quot;Run&quot;,
+    &quot;Python.simetriacerta.executor&quot;: &quot;Run&quot;,
+    &quot;Python.soma.executor&quot;: &quot;Run&quot;,
+    &quot;Python.testedoniach.executor&quot;: &quot;Run&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;master&quot;,
+    &quot;last_opened_file_path&quot;: &quot;/home/yosef/PycharmProjects/Mirror/XPD-240724/Fe2p&quot;,
+    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
+    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
+    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
+    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
+    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;preferences.lookFeel&quot;,
+    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
   }
-}]]></component>
+}</component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
       <recent name="$PROJECT_DIR$/XPD-240724/Fe2p" />
@@ -70,8 +82,8 @@
   <component name="SharedIndexes">
     <attachedChunks>
       <set>
-        <option value="bundled-js-predefined-d6986cc7102b-deb605915726-JavaScript-PY-243.22562.180" />
-        <option value="bundled-python-sdk-85c76a3b01b3-9a18a617cbe4-com.jetbrains.pycharm.pro.sharedIndexes.bundled-PY-243.22562.180" />
+        <option value="bundled-js-predefined-d6986cc7102b-e768b9ed790e-JavaScript-PY-243.21565.199" />
+        <option value="bundled-python-sdk-cab1f2013843-4ae2d6a61b08-com.jetbrains.pycharm.pro.sharedIndexes.bundled-PY-243.21565.199" />
       </set>
     </attachedChunks>
   </component>
@@ -97,6 +109,8 @@
       <workItem from="1734526308838" duration="27850000" />
       <workItem from="1734813450622" duration="2286000" />
       <workItem from="1734835412065" duration="8351000" />
+      <workItem from="1736359949149" duration="38000" />
+      <workItem from="1736362229247" duration="671000" />
     </task>
     <servers />
   </component>
@@ -115,18 +129,18 @@
     </option>
   </component>
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
-    <SUITE FILE_PATH="coverage/Mirror$soma.coverage" NAME="soma Coverage Results" MODIFIED="1732896606981" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/XPD-240724/Fe2p" />
-    <SUITE FILE_PATH="coverage/Mirror$Simetrias.coverage" NAME="Simetrias Coverage Results" MODIFIED="1732194700279" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
-    <SUITE FILE_PATH="coverage/Mirror$Simetriam.coverage" NAME="Simetriam Coverage Results" MODIFIED="1733250313076" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
-    <SUITE FILE_PATH="coverage/Mirror$main.coverage" NAME="main Coverage Results" MODIFIED="1732558907948" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/Mirror$Reflexaosegunda.coverage" NAME="Reflexaosegunda Coverage Results" MODIFIED="1732199153912" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/Mirror$calculo_intensity.coverage" NAME="calculo_intensity Coverage Results" MODIFIED="1734356568538" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
-    <SUITE FILE_PATH="coverage/Mirror$read_lnls.coverage" NAME="read_lnls Coverage Results" MODIFIED="1734843693476" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/XPD-240724/Fe2p" />
-    <SUITE FILE_PATH="coverage/Mirror$testedoniach.coverage" NAME="testedoniach Coverage Results" MODIFIED="1734843372992" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/XPD-240724/Fe2p" />
-    <SUITE FILE_PATH="coverage/Mirror$90symmetry.coverage" NAME="90symmetry Coverage Results" MODIFIED="1732339010577" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/Mirror$read_lnls.coverage" NAME="read_lnls Coverage Results" MODIFIED="1736362260239" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/XPD-240724/Fe2p" />
+    <SUITE FILE_PATH="coverage/Mirror$Simetrias.coverage" NAME="Simetrias Coverage Results" MODIFIED="1732194700279" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/Mirror$plotsimetria.coverage" NAME="plotsimetria Coverage Results" MODIFIED="1736256377193" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/Mirror$simetriacerta.coverage" NAME="simetriacerta Coverage Results" MODIFIED="1734626563123" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/XPD-240724/Fe2p" />
     <SUITE FILE_PATH="coverage/Mirror$Simetrias180.coverage" NAME="Simetrias180 Coverage Results" MODIFIED="1732310402813" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/Mirror$Simetrias90.coverage" NAME="Simetrias90 Coverage Results" MODIFIED="1732336475013" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
-    <SUITE FILE_PATH="coverage/Mirror$Reflexaosegunda.coverage" NAME="Reflexaosegunda Coverage Results" MODIFIED="1732199153912" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
-    <SUITE FILE_PATH="coverage/Mirror$plotsimetria.coverage" NAME="plotsimetria Coverage Results" MODIFIED="1732702353589" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
-    <SUITE FILE_PATH="coverage/Mirror$simetriacerta.coverage" NAME="simetriacerta Coverage Results" MODIFIED="1734626563123" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/XPD-240724/Fe2p" />
+    <SUITE FILE_PATH="coverage/Mirror$90symmetry.coverage" NAME="90symmetry Coverage Results" MODIFIED="1732339010577" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/Mirror$soma.coverage" NAME="soma Coverage Results" MODIFIED="1732896606981" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/XPD-240724/Fe2p" />
+    <SUITE FILE_PATH="coverage/Mirror$Simetriam.coverage" NAME="Simetriam Coverage Results" MODIFIED="1733250313076" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/Mirror$testedoniach.coverage" NAME="testedoniach Coverage Results" MODIFIED="1734843372992" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/XPD-240724/Fe2p" />
+    <SUITE FILE_PATH="coverage/Mirror$main.coverage" NAME="main Coverage Results" MODIFIED="1736254543942" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/XPD-240724/Fe2p" />
   </component>
 </project>
