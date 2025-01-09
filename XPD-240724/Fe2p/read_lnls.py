@@ -1,19 +1,19 @@
-def fourier_symmetrization(theta_values, phi_values, intensity_values, symmetry):
+def fourier_symmetrization(theta_values, phi_values, intensity_values, symmetry, threshold_factor=2.0):
     """
-    Aplica a simetrização por expansão em Fourier nos dados XPD.
+    Aplica a simetrização por expansão em Fourier nos dados XPD, mantendo valores originais onde houver picos anômalos.
 
     Parameters:
         theta_values (array): Valores de theta.
         phi_values (array): Valores de phi.
         intensity_values (2D array): Intensidades organizadas como [theta][phi].
         symmetry (int): Grau de simetria (ex.: 4 para C4).
+        threshold_factor (float): Fator de tolerância para picos anômalos (default: 2.0).
 
     Returns:
         intensity_symmetric (2D array): Intensidades simetrizadas.
     """
     n_theta = len(theta_values)
     n_phi = len(phi_values)
-
 
     # Inicializar array para intensidades simetrizadas
     intensity_symmetric = np.zeros_like(intensity_values)
@@ -32,6 +32,10 @@ def fourier_symmetrization(theta_values, phi_values, intensity_values, symmetry)
 
         # Calcular a Transformada Inversa de Fourier com os componentes simétricos
         f_symmetric = np.fft.ifft(F_symmetric).real
+
+        # Substituir valores anômalos (picos muito altos)
+        mask = np.abs(f_symmetric) > threshold_factor * np.abs(f)  # Se for muito maior que o original
+        f_symmetric[mask] = f[mask]  # Mantém o valor original nesses pontos
 
         # Salvar a curva simetrizada
         intensity_symmetric[i, :] = f_symmetric
@@ -64,7 +68,7 @@ def generate_file_names(prefix, thetai, thetaf, dtheta, phii, phif, dphi):
             file_name = f"{prefix}{theta}.{phi}"
             file_names.append(file_name)
     return file_names
-def shirley_background(x_data, y_data, init_back, end_back, n_iterations=20):
+def shirley_background(x_data, y_data, init_back, end_back, n_iterations=100):
     """
     Calcula o fundo de Shirley para um espectro de intensidade.
 
@@ -123,7 +127,6 @@ from scipy.integrate import trapezoid
 from scipy.optimize import curve_fit
 from scipy.ndimage import gaussian_filter1d
 import time
-from matplotlib import colors
 
 # Parâmetros fornecidos
 file_prefix = 'JL24_-'
@@ -133,9 +136,9 @@ dtheta = 3
 phii = 0
 phif = 357
 dphi = 3
-channel = 711.49994
+channel = 1123.99988
 symmetry = 2
-indice_de_plotagem = 4
+indice_de_plotagem = 0
 shirley_tempo = 0
 poli_tempo = 0.1
 fft_tempo = 0.1
@@ -207,19 +210,20 @@ def process_file(file_name, output_file):
         y_values = np.array([row[0] for row in block])  # Intensidades
         x_values = np.array([row[1] for row in block])  # Índices/canais
 
-        y_smoothed_raw = smooth(y_values, sigma=1)
+        y_smoothed_raw = smooth(y_values, sigma=1.0)
         init_back = 1
         end_back = len(x_values) - 1
 
         shirley_bg_smoothed = shirley_background(x_values, y_smoothed_raw, init_back, end_back)
         y_corrected_smoothed = y_smoothed_raw - shirley_bg_smoothed
         positive_values = y_corrected_smoothed.copy()
-        positive_values[positive_values < 0] = 0
+        positive_values = np.where(y_corrected_smoothed < 0, 0, y_corrected_smoothed)
+
 
         fitted_double_doniach = fitted_double_gaussian = np.zeros_like(x_values)
 
         # Ajuste Doniach-Sunjic apenas se indice_de_plotagem == 1
-        if indice_de_plotagem == 1:
+        if indice_de_plotagem == 3:
             initial_guess_doniach = [210000, 15, 1, 0.1, 10000, 31, 1, 0.1]
             bounds_doniach = ([200000, 10, 0.5, 0, 5000, 30, 0.5, 0], [300000, 20, 8, 2, 50000, 32, 4, 2])
             try:
@@ -250,11 +254,11 @@ def process_file(file_name, output_file):
 
         total_area = trapezoid(positive_values, x_values)
         print("Area: ", total_area)
-        if indice_de_plotagem == 4:
+        if indice_de_plotagem == 0:
             return list(zip(y_corrected_smoothed, x_values)), total_area
 
         # Plotagem - Mantendo a estrutura original
-        if indice_de_plotagem == 1:
+        if indice_de_plotagem == 3:
             title = f"Espectro XPS com Fundo Shirley Ajustado (θ={theta_values}, φ={phi_values})"
             plt.figure(figsize=(10, 6))
             plt.plot(x_values, y_smoothed_raw, label='Original', marker='o')
@@ -290,7 +294,7 @@ def process_file(file_name, output_file):
             plt.show()
             time.sleep(shirley_tempo)
 
-        if indice_de_plotagem == 0:
+        if indice_de_plotagem == 1:
             title = f"Espectro XPS com Fundo Shirley Ajustado (θ={theta_values}, φ={phi_values})"
             plt.figure(figsize=(10, 6))
             plt.plot(x_values, y_smoothed_raw, label='Original', marker='o')
@@ -507,11 +511,11 @@ def process_and_plot(input_file, output_file, plot_dir="plots", phi_values_to_ev
 
                 # Calcular a média da intensidade ajustada
                 mean_intensity = np.mean(intensity)
-
+                mean_intensity2 = np.mean(intensity_fitted)
                 # Calcular Chi para cada valor de phi
                 Chi = ((intensity - intensity_fitted) / intensity_fitted)
                 Chi2 =((intensity-mean_intensity) / mean_intensity)
-
+                Chi3 = ((intensity-mean_intensity2) / mean_intensity2)
 
             # Escreve cada valor de phi_fine, intensity_fitted, mean_intensity e Chi em uma linha separada
             for p, i, chi in zip(phi, intensity, Chi):
@@ -723,7 +727,7 @@ def interpolate_data(df, resolution=1000):
     phi_grid, theta_grid = np.meshgrid(phi_grid, theta_grid)
 
     # Realizar a interpolação
-    intensity_grid = griddata((phi, theta), intensity, (phi_grid, theta_grid), method='linear')
+    intensity_grid = griddata((phi, theta), intensity, (phi_grid, theta_grid), method='cubic')
 
     return phi_grid, theta_grid, intensity_grid
 
@@ -732,10 +736,6 @@ def interpolate_data(df, resolution=1000):
 def plot_polar_interpolated(df, resolution=500):
     # Interpolar os dados
     phi_grid, theta_grid, intensity_grid = interpolate_data(df, resolution)
-    min_value = np.min(intensity_grid)
-    max_value = np.max(intensity_grid)
-    threshold = (max_value - min_value)
-    norm = colors.Normalize(vmin=min_value, vmax=threshold)
     # Criando o gráfico polar
     fig, ax = plt.subplots(subplot_kw={'projection': 'polar'})
 
