@@ -14,6 +14,7 @@ def fourier_symmetrization(theta_values, phi_values, intensity_values, symmetry)
     n_theta = len(theta_values)
     n_phi = len(phi_values)
 
+
     # Inicializar array para intensidades simetrizadas
     intensity_symmetric = np.zeros_like(intensity_values)
 
@@ -24,13 +25,10 @@ def fourier_symmetrization(theta_values, phi_values, intensity_values, symmetry)
         # Calcular a Transformada de Fourier
         F = np.fft.fft(f)
 
-        # Criar uma cópia para armazenar apenas os componentes simétricos
-        F_symmetric = np.zeros_like(F, dtype=complex)
-
-        # Manter apenas os harmônicos que atendem à simetria (ex.: múltiplos de symmetry)
-        for u in range(0, n_phi):
-            if u % symmetry == 0:
-                F_symmetric[u] = F[u]
+        # Criar um filtro gaussiano suave para evitar cortes bruscos
+        freq = np.fft.fftfreq(n_phi)  # Frequências associadas à FFT
+        gaussian_filter = np.exp(-((freq * n_phi) % symmetry) ** 2)  # Mantém harmônicos múltiplos de symmetry
+        F_symmetric = F * gaussian_filter
 
         # Calcular a Transformada Inversa de Fourier com os componentes simétricos
         f_symmetric = np.fft.ifft(F_symmetric).real
@@ -41,12 +39,11 @@ def fourier_symmetrization(theta_values, phi_values, intensity_values, symmetry)
         # Plotar as curvas original e simetrizada (opcional)
         plt.figure()
         plt.plot(phi_values, f, label='Original', linestyle='--')
-        plt.plot(phi_values, f_symmetric, label=f'Simetrizado (C{symmetry})')
+        plt.plot(phi_values, f_symmetric, label=f'Simetrizado (C{symmetry})', linewidth=2)
         plt.title(f'Theta = {theta:.2f}')
         plt.xlabel('Phi (°)')
         plt.ylabel('Intensidade')
         plt.legend()
-        time.sleep(fft_tempo)
         plt.show()
 
     return intensity_symmetric
@@ -110,7 +107,7 @@ def shirley_background(x_data, y_data, init_back, end_back, n_iterations=20):
         background0 = background.copy()
 
     return background
-def smooth(data, sigma=1.5):
+def smooth(data, sigma=1):
     return gaussian_filter1d(data, sigma=sigma)
 # Função para o polinômio de grau 3
 def polynomial_3(x, a, b, c, d):
@@ -126,6 +123,7 @@ from scipy.integrate import trapezoid
 from scipy.optimize import curve_fit
 from scipy.ndimage import gaussian_filter1d
 import time
+from matplotlib import colors
 
 # Parâmetros fornecidos
 file_prefix = 'JL24_-'
@@ -137,10 +135,10 @@ phif = 357
 dphi = 3
 channel = 1123.99988
 symmetry = 2
-indice_de_plotagem = 0
+indice_de_plotagem = 4
 shirley_tempo = 0
-poli_tempo = 0.5
-fft_tempo = 0.5
+poli_tempo = 0.1
+fft_tempo = 0.1
 
 
 
@@ -209,14 +207,14 @@ def process_file(file_name, output_file):
         y_values = np.array([row[0] for row in block])  # Intensidades
         x_values = np.array([row[1] for row in block])  # Índices/canais
 
-        y_smoothed_raw = smooth(y_values, sigma=1.5)
-        init_back = 1
+        y_smoothed_raw = smooth(y_values, sigma=1)
+        init_back = 0
         end_back = len(x_values) - 1
 
         shirley_bg_smoothed = shirley_background(x_values, y_smoothed_raw, init_back, end_back)
         y_corrected_smoothed = y_smoothed_raw - shirley_bg_smoothed
         positive_values = y_corrected_smoothed.copy()
-        positive_values[positive_values < 0] = 0
+        #positive_values[positive_values < 0] = 0
 
         fitted_double_doniach = fitted_double_gaussian = np.zeros_like(x_values)
 
@@ -252,6 +250,8 @@ def process_file(file_name, output_file):
 
         total_area = trapezoid(positive_values, x_values)
         print("Area: ", total_area)
+        if indice_de_plotagem == 4:
+            return list(zip(y_corrected_smoothed, x_values)), total_area
 
         # Plotagem - Mantendo a estrutura original
         if indice_de_plotagem == 1:
@@ -732,7 +732,10 @@ def interpolate_data(df, resolution=1000):
 def plot_polar_interpolated(df, resolution=500):
     # Interpolar os dados
     phi_grid, theta_grid, intensity_grid = interpolate_data(df, resolution)
-
+    min_value = np.min(intensity_grid)
+    max_value = np.max(intensity_grid)
+    threshold = (max_value - min_value)
+    norm = colors.Normalize(vmin=min_value, vmax=threshold)
     # Criando o gráfico polar
     fig, ax = plt.subplots(subplot_kw={'projection': 'polar'})
 
