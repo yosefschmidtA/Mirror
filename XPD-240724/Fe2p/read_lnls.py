@@ -133,7 +133,7 @@ dtheta = 3
 phii = 0
 phif = 357
 dphi = 3
-channel = 1123.99988
+channel = 711.49994
 symmetry = 2
 indice_de_plotagem = 4
 shirley_tempo = 0
@@ -208,13 +208,13 @@ def process_file(file_name, output_file):
         x_values = np.array([row[1] for row in block])  # Índices/canais
 
         y_smoothed_raw = smooth(y_values, sigma=1)
-        init_back = 0
+        init_back = 1
         end_back = len(x_values) - 1
 
         shirley_bg_smoothed = shirley_background(x_values, y_smoothed_raw, init_back, end_back)
         y_corrected_smoothed = y_smoothed_raw - shirley_bg_smoothed
         positive_values = y_corrected_smoothed.copy()
-        #positive_values[positive_values < 0] = 0
+        positive_values[positive_values < 0] = 0
 
         fitted_double_doniach = fitted_double_gaussian = np.zeros_like(x_values)
 
@@ -740,7 +740,7 @@ def plot_polar_interpolated(df, resolution=500):
     fig, ax = plt.subplots(subplot_kw={'projection': 'polar'})
 
     # Plotando a intensidade interpolada
-    c = ax.pcolormesh(phi_grid, theta_grid, intensity_grid, shading='gouraud', cmap='hot')
+    c = ax.pcolormesh(phi_grid, theta_grid, intensity_grid, shading='gouraud', cmap='afmhot')
 
     # Ajuste para mostrar os valores reais de theta (em graus)
     ax.set_theta_offset(0)  # Ajusta o ponto de origem para o topo, mantendo o valor de 0° no topo
