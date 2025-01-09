@@ -6,10 +6,11 @@
   <component name="ChangeListManager">
     <list default="true" id="ea7fdd2e-a8d5-403e-bfac-032ea3b0a74e" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/XPD-240724/Fe2p/JL24_-60.201" beforeDir="false" afterPath="$PROJECT_DIR$/XPD-240724/Fe2p/JL24_-60.201" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/XPD-240724/Fe2p/JL24_-63.201" beforeDir="false" afterPath="$PROJECT_DIR$/XPD-240724/Fe2p/JL24_-63.201" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/XPD-240724/Fe2p/JL24_-60.204" beforeDir="false" afterPath="$PROJECT_DIR$/XPD-240724/Fe2p/JL24_-60.204" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/XPD-240724/Fe2p/JL24_-66.180" beforeDir="false" afterPath="$PROJECT_DIR$/XPD-240724/Fe2p/JL24_-66.180" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/XPD-240724/Fe2p/coeficientes_ajustados.txt" beforeDir="false" afterPath="$PROJECT_DIR$/XPD-240724/Fe2p/coeficientes_ajustados.txt" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/XPD-240724/Fe2p/read_lnls.py" beforeDir="false" afterPath="$PROJECT_DIR$/XPD-240724/Fe2p/read_lnls.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/XPD-240724/Fe2p/read_lnls_v3.pro" beforeDir="false" afterPath="$PROJECT_DIR$/XPD-240724/Fe2p/read_lnls_v3.pro" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/XPD-240724/Fe2p/saidashirley.txt" beforeDir="false" afterPath="$PROJECT_DIR$/XPD-240724/Fe2p/saidashirley.txt" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/XPD-240724/Fe2p/saidatpintensity.txt" beforeDir="false" afterPath="$PROJECT_DIR$/XPD-240724/Fe2p/saidatpintensity.txt" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/XPD-240724/Fe2p/saidaxps.txt" beforeDir="false" afterPath="$PROJECT_DIR$/XPD-240724/Fe2p/saidaxps.txt" afterDir="false" />
@@ -130,7 +131,7 @@
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
     <SUITE FILE_PATH="coverage/Mirror$Reflexaosegunda.coverage" NAME="Reflexaosegunda Coverage Results" MODIFIED="1732199153912" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/Mirror$calculo_intensity.coverage" NAME="calculo_intensity Coverage Results" MODIFIED="1734356568538" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
-    <SUITE FILE_PATH="coverage/Mirror$read_lnls.coverage" NAME="read_lnls Coverage Results" MODIFIED="1736445037569" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/XPD-240724/Fe2p" />
+    <SUITE FILE_PATH="coverage/Mirror$read_lnls.coverage" NAME="read_lnls Coverage Results" MODIFIED="1736448882291" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/XPD-240724/Fe2p" />
     <SUITE FILE_PATH="coverage/Mirror$Simetrias.coverage" NAME="Simetrias Coverage Results" MODIFIED="1732194700279" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/Mirror$plotsimetria.coverage" NAME="plotsimetria Coverage Results" MODIFIED="1736256377193" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/Mirror$simetriacerta.coverage" NAME="simetriacerta Coverage Results" MODIFIED="1734626563123" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/XPD-240724/Fe2p" />

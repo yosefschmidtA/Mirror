@@ -1,13 +1,12 @@
-def fourier_symmetrization(theta_values, phi_values, intensity_values, symmetry, threshold_factor=2.0):
+def fourier_symmetrization(theta_values, phi_values, intensity_values, symmetry):
     """
-    Aplica a simetrização por expansão em Fourier nos dados XPD, mantendo valores originais onde houver picos anômalos.
+    Aplica a simetrização por expansão em Fourier nos dados XPD.
 
     Parameters:
         theta_values (array): Valores de theta.
         phi_values (array): Valores de phi.
         intensity_values (2D array): Intensidades organizadas como [theta][phi].
         symmetry (int): Grau de simetria (ex.: 4 para C4).
-        threshold_factor (float): Fator de tolerância para picos anômalos (default: 2.0).
 
     Returns:
         intensity_symmetric (2D array): Intensidades simetrizadas.
@@ -25,17 +24,16 @@ def fourier_symmetrization(theta_values, phi_values, intensity_values, symmetry,
         # Calcular a Transformada de Fourier
         F = np.fft.fft(f)
 
-        # Criar um filtro gaussiano suave para evitar cortes bruscos
-        freq = np.fft.fftfreq(n_phi)  # Frequências associadas à FFT
-        gaussian_filter = np.exp(-((freq * n_phi) % symmetry) ** 2)  # Mantém harmônicos múltiplos de symmetry
-        F_symmetric = F * gaussian_filter
+        # Criar uma cópia para armazenar apenas os componentes simétricos
+        F_symmetric = np.zeros_like(F, dtype=complex)
+
+        # Manter apenas os harmônicos que atendem à simetria (ex.: múltiplos de symmetry)
+        for u in range(0, n_phi):
+            if u % symmetry == 0:
+                F_symmetric[u] = F[u]
 
         # Calcular a Transformada Inversa de Fourier com os componentes simétricos
         f_symmetric = np.fft.ifft(F_symmetric).real
-
-        # Substituir valores anômalos (picos muito altos)
-        mask = np.abs(f_symmetric) > threshold_factor * np.abs(f)  # Se for muito maior que o original
-        f_symmetric[mask] = f[mask]  # Mantém o valor original nesses pontos
 
         # Salvar a curva simetrizada
         intensity_symmetric[i, :] = f_symmetric
@@ -43,14 +41,16 @@ def fourier_symmetrization(theta_values, phi_values, intensity_values, symmetry,
         # Plotar as curvas original e simetrizada (opcional)
         plt.figure()
         plt.plot(phi_values, f, label='Original', linestyle='--')
-        plt.plot(phi_values, f_symmetric, label=f'Simetrizado (C{symmetry})', linewidth=2)
+        plt.plot(phi_values, f_symmetric, label=f'Simetrizado (C{symmetry})')
         plt.title(f'Theta = {theta:.2f}')
         plt.xlabel('Phi (°)')
         plt.ylabel('Intensidade')
         plt.legend()
+        time.sleep(fft_tempo)
         plt.show()
 
     return intensity_symmetric
+
 def gaussian_fit(x, amplitude, mean, stddev):
     """
     Retorna os valores de uma gaussiana para os parâmetros dados.
@@ -68,7 +68,7 @@ def generate_file_names(prefix, thetai, thetaf, dtheta, phii, phif, dphi):
             file_name = f"{prefix}{theta}.{phi}"
             file_names.append(file_name)
     return file_names
-def shirley_background(x_data, y_data, init_back, end_back, n_iterations=100):
+def shirley_background(x_data, y_data, init_back, end_back, n_iterations=50):
     """
     Calcula o fundo de Shirley para um espectro de intensidade.
 
@@ -111,7 +111,7 @@ def shirley_background(x_data, y_data, init_back, end_back, n_iterations=100):
         background0 = background.copy()
 
     return background
-def smooth(data, sigma=1):
+def smooth(data, sigma=2):
     return gaussian_filter1d(data, sigma=sigma)
 # Função para o polinômio de grau 3
 def polynomial_3(x, a, b, c, d):
@@ -136,7 +136,7 @@ dtheta = 3
 phii = 0
 phif = 357
 dphi = 3
-channel = 1123.99988
+channel = 711.49994
 symmetry = 2
 indice_de_plotagem = 0
 shirley_tempo = 0
@@ -210,15 +210,16 @@ def process_file(file_name, output_file):
         y_values = np.array([row[0] for row in block])  # Intensidades
         x_values = np.array([row[1] for row in block])  # Índices/canais
 
-        y_smoothed_raw = smooth(y_values, sigma=1.0)
+        y_smoothed_raw = smooth(y_values, sigma=2.0)
         init_back = 1
         end_back = len(x_values) - 1
 
         shirley_bg_smoothed = shirley_background(x_values, y_smoothed_raw, init_back, end_back)
         y_corrected_smoothed = y_smoothed_raw - shirley_bg_smoothed
-        positive_values = y_corrected_smoothed.copy()
-        positive_values = np.where(y_corrected_smoothed < 0, 0, y_corrected_smoothed)
 
+        # Forçar valores positivos (removendo possíveis artefatos negativos)
+        positive_values = y_corrected_smoothed.copy()
+        positive_values[positive_values < 0] = 0
 
         fitted_double_doniach = fitted_double_gaussian = np.zeros_like(x_values)
 
@@ -295,6 +296,8 @@ def process_file(file_name, output_file):
             time.sleep(shirley_tempo)
 
         if indice_de_plotagem == 1:
+            save_dir = "XPS_Shirley"
+            os.makedirs(save_dir, exist_ok=True)
             title = f"Espectro XPS com Fundo Shirley Ajustado (θ={theta_values}, φ={phi_values})"
             plt.figure(figsize=(10, 6))
             plt.plot(x_values, y_smoothed_raw, label='Original', marker='o')
@@ -306,7 +309,13 @@ def process_file(file_name, output_file):
             plt.title(title)
             plt.legend()
             plt.grid(True)
+            # Nome do arquivo (usando os valores de θ e φ para identificação)
+            filename = f"XPS_Shirley_theta_{theta_values}_phi_{phi_values}.png"
+            filepath = os.path.join(save_dir, filename)
+            # Salvar a figura
+            plt.savefig(filepath, dpi=300, bbox_inches='tight')
             plt.show()
+
             time.sleep(shirley_tempo)
 
         return list(zip(y_corrected_smoothed, x_values)), total_area
@@ -727,7 +736,7 @@ def interpolate_data(df, resolution=1000):
     phi_grid, theta_grid = np.meshgrid(phi_grid, theta_grid)
 
     # Realizar a interpolação
-    intensity_grid = griddata((phi, theta), intensity, (phi_grid, theta_grid), method='cubic')
+    intensity_grid = griddata((phi, theta), intensity, (phi_grid, theta_grid), method='linear')
 
     return phi_grid, theta_grid, intensity_grid
 
