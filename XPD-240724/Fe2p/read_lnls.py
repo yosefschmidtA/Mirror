@@ -1,3 +1,19 @@
+# Parâmetros fornecidos
+file_prefix = 'JL24_-'
+thetai = 12
+thetaf = 69
+dtheta = 3
+phii = 0
+phif = 357
+dphi = 3
+channel = 1123.99988
+symmetry = 2
+indice_de_plotagem = 0
+shirley_tempo = 0
+poli_tempo = 0.1
+fft_tempo = 0.1
+arquivo_saida = "exp.txt"
+
 def fourier_symmetrization(theta_values, phi_values, intensity_values, symmetry):
     """
     Aplica a simetrização por expansão em Fourier nos dados XPD.
@@ -68,7 +84,7 @@ def generate_file_names(prefix, thetai, thetaf, dtheta, phii, phif, dphi):
             file_name = f"{prefix}{theta}.{phi}"
             file_names.append(file_name)
     return file_names
-def shirley_background(x_data, y_data, init_back, end_back, n_iterations=50):
+def shirley_background(x_data, y_data, init_back, end_back, n_iterations=6):
     """
     Calcula o fundo de Shirley para um espectro de intensidade.
 
@@ -93,19 +109,15 @@ def shirley_background(x_data, y_data, init_back, end_back, n_iterations=50):
     # Calcula o fundo de Shirley por n iterações
     for nint in range(n_iterations):
         for k2 in range(end_back, init_back - 1, -1):
-            sum1 = 0
-            sum2 = 0
-            for k in range(end_back, k2 - 1, -1):
-                sum1 += y_data[k] - background0[k]
-            for k in range(end_back, init_back - 1, -1):
-                sum2 += y_data[k] - background0[k]
+            sum1 = sum(y_data[k] - background0[k] for k in range(end_back, k2 - 1, -1))
+            sum2 = sum(y_data[k] - background0[k] for k in range(end_back, init_back - 1, -1))
 
             # Calcula o fundo interpolado entre as extremidades
-            background[k2] = (a - b) * sum1 / sum2 + b
+            if sum2 != 0:
+                background[k2] = (a - b) * sum1 / sum2 + b
 
-        # Ajuste o fundo para as extremidades
+        # Ajuste apenas para garantir suavidade nas extremidades
         background[:init_back] = background[init_back]
-        background[end_back:] = background[end_back]
 
         # Atualiza o fundo de referência para a próxima iteração
         background0 = background.copy()
@@ -128,24 +140,8 @@ from scipy.optimize import curve_fit
 from scipy.ndimage import gaussian_filter1d
 import time
 
-# Parâmetros fornecidos
-file_prefix = 'JL24_-'
-thetai = 12
-thetaf = 69
-dtheta = 3
-phii = 0
-phif = 357
-dphi = 3
-channel = 711.49994
-symmetry = 2
-indice_de_plotagem = 0
-shirley_tempo = 0
-poli_tempo = 0.1
-fft_tempo = 0.1
 
-
-
-output_file_path = 'simetrizados.txt'  # Defina o nome do arquivo de saída
+output_file_path = 'simetrizados.txt'  # não mexa nesse arquivo
 # Função para gerar os nomes dos arquivos esperados
 
 # Gerar os nomes de arquivos esperados
@@ -296,8 +292,8 @@ def process_file(file_name, output_file):
             time.sleep(shirley_tempo)
 
         if indice_de_plotagem == 1:
-            save_dir = "XPS_Shirley"
-            os.makedirs(save_dir, exist_ok=True)
+            #save_dir = "XPS_Shirley"
+            #os.makedirs(save_dir, exist_ok=True)
             title = f"Espectro XPS com Fundo Shirley Ajustado (θ={theta_values}, φ={phi_values})"
             plt.figure(figsize=(10, 6))
             plt.plot(x_values, y_smoothed_raw, label='Original', marker='o')
@@ -310,10 +306,10 @@ def process_file(file_name, output_file):
             plt.legend()
             plt.grid(True)
             # Nome do arquivo (usando os valores de θ e φ para identificação)
-            filename = f"XPS_Shirley_theta_{theta_values}_phi_{phi_values}.png"
-            filepath = os.path.join(save_dir, filename)
+            #filename = f"XPS_Shirley_theta_{theta_values}_phi_{phi_values}.png"
+            #filepath = os.path.join(save_dir, filename)
             # Salvar a figura
-            plt.savefig(filepath, dpi=300, bbox_inches='tight')
+            #plt.savefig(filepath, dpi=300, bbox_inches='tight')
             plt.show()
 
             time.sleep(shirley_tempo)
@@ -847,6 +843,7 @@ df = process_file(file_path)
 df = rotate_phi(df, 0)
 
 
-save_to_txt_with_blocks(df, 'teste.txt')
+
+save_to_txt_with_blocks(df, arquivo_saida)
 
 plot_polar_interpolated(df)
