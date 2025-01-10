@@ -715,8 +715,6 @@ def process_file(file_path):
 
     return df
 
-
-
 # Função para interpolar os dados
 def interpolate_data(df, resolution=1000):
     # Definir uma grade regular para a interpolação
@@ -841,8 +839,6 @@ def save_to_txt_with_blocks(df, file_name):
 df = process_file(file_path)
 
 df = rotate_phi(df, 0)
-
-
 
 save_to_txt_with_blocks(df, arquivo_saida)
 
